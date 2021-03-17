@@ -3,7 +3,7 @@ const SegmentDeliveryModal = require('./components/modals/SegmentDeliveryModal')
 
     const deliveryObj = {
         showDelivery: null,
-        deliveryEnabled: null,
+        onTool: null,
         signedJWT: null
     };
 
@@ -15,9 +15,13 @@ const SegmentDeliveryModal = require('./components/modals/SegmentDeliveryModal')
         if( config.pluggable && !_.isUndefined( config.pluggable.airbnb_auth_token ) ){
             sessionStorage.setItem( config.id_job + ":airbnb_auth_token", config.pluggable.airbnb_auth_token );
         }
-        deliveryObj.deliveryEnabled = !!parseInt( sessionStorage.getItem( config.id_job + ':deliveryEnabled' ) );
+        if( config.pluggable && !_.isUndefined( config.pluggable.delivery_available ) ){
+            sessionStorage.setItem( config.id_job + ":delivery_available", config.pluggable.delivery_available );
+        }
+        deliveryObj.onTool = !!parseInt( sessionStorage.getItem( config.id_job + ':deliveryEnabled' ) );
         deliveryObj.showDelivery = !!parseInt( sessionStorage.getItem( config.id_job + ':showDelivery' ) );
         deliveryObj.signedJWT = sessionStorage.getItem( config.id_job + ":airbnb_auth_token" );
+        deliveryObj.jobDelivarable = sessionStorage.getItem( config.id_job + ":delivery_available" ) === 'true';
     };
 
     const setErrorNotification = function( title, message ){
@@ -40,8 +44,7 @@ const SegmentDeliveryModal = require('./components/modals/SegmentDeliveryModal')
     };
 
     _setDeliveryOrNull();
-
-    if ( deliveryObj.showDelivery && deliveryObj.deliveryEnabled ) {
+     if (deliveryObj.jobDelivarable && deliveryObj.showDelivery && deliveryObj.onTool ) {
         $(document).on('setTranslation:success', function(e, data) {
             let segment = data.segment;
             $('.buttons .deliver', UI.getSegmentById(segment.sid)).removeClass('disabled');
@@ -94,7 +97,7 @@ const SegmentDeliveryModal = require('./components/modals/SegmentDeliveryModal')
             });
             return false;
         });
-    } else if ( deliveryObj.showDelivery && !deliveryObj.deliveryEnabled ) {
+    } else if ( deliveryObj.showDelivery && !deliveryObj.onTool ) {
         $(document).on('click', 'section .buttons .deliver',  function(e) {
             e.preventDefault();
             e.stopPropagation();
@@ -106,6 +109,8 @@ const SegmentDeliveryModal = require('./components/modals/SegmentDeliveryModal')
                 UI.openSegmentDeliveryModal();
             }
         });
+    } else if ( !deliveryObj.jobDelivarable ) {
+         setTimeout(()=>UI.openNotDeliverableJob(), 500);
     }
 
     var originalRegisterFooterTabs = UI.registerFooterTabs;
@@ -117,6 +122,14 @@ const SegmentDeliveryModal = require('./components/modals/SegmentDeliveryModal')
                 modalName: 'segmentDeliveryModal',
                 text: 'This is an off-tool project. The segment delivery feature is disabled in Matecat. ' +
                     'You will have to deliver the whole project following the off-tool delivery procedure'
+            };
+            APP.ModalWindow.showModalComponent(SegmentDeliveryModal, props, "Segment delivery");
+        },
+        openNotDeliverableJob: function() {
+            const props ={
+                modalName: 'segmentDeliveryModal',
+                text: 'All phrases included in this job cannot be delivered from MateCat. ' +
+                    'To fix a phrase, please initiate a Manual Fix request from Dragoman.'
             };
             APP.ModalWindow.showModalComponent(SegmentDeliveryModal, props, "Segment delivery");
         },
@@ -221,13 +234,13 @@ const SegmentDeliveryModal = require('./components/modals/SegmentDeliveryModal')
             }
         },
         inputEditAreaEventHandler: function() {
-            if ( deliveryObj.deliveryEnabled ) {
+            if ( deliveryObj.onTool ) {
                 $('.buttons .deliver', UI.currentSegment).addClass('disabled');
             }
             originalInputEditAreaEventHandler.apply(this, arguments);
         },
         gotoNextSegment: function (  ) {
-            if ( deliveryObj.deliveryEnabled ) {
+            if ( deliveryObj.onTool ) {
                 return false
             } else {
                 originalgoToNextSegment.apply(this, arguments);
@@ -346,11 +359,11 @@ const SegmentDeliveryModal = require('./components/modals/SegmentDeliveryModal')
 
             "czech_like" : {
 
-                "num_forms" : 4,
+                "num_forms" : 3,
 
-                "doc" : ["When count is 1 – one |||| When count is 2~4 – few |||| Everything else (0, 5, 6, ...) – many |||| Decimal fractions - other"],
+                "doc" : ["When count is 1", "When count is 2, 3, 4", "Everything else (0, 5, 6, ...)"],
 
-                "rule" : "lambda { |n| (n == 1 ? 0 : n % 10 >= 2 && n % 10 <= 4 && (n % 100 < 10 || n % 100 >= 20) ? 1 : 2) }"
+                "rule" : "lambda { |n| (n == 1) ? 0 : (n >= 2 && n <= 4) ? 1 : 2 }"
 
             },
 

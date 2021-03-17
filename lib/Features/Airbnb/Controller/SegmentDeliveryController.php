@@ -182,11 +182,12 @@ class SegmentDeliveryController extends KleinController {
                 CURLOPT_POSTFIELDS     => json_encode( $portParams /* Redundant, the URL is enough, add to pass more info to the service */ )
         ];
 
-        if( new DateTime( $chunk->create_date ) > new DateTime( "2020-08-25 12:00" ) ){
-            $resource = $mh->createResource( $config[ 'delivery_endpoint' ] . implode( "/", [ $this->chunk->id, $this->chunk->password, $segment->internal_id ] ), $curl_additional_params );
-        } else {
-            $resource = $mh->createResource( $config[ 'old_delivery_endpoint' ] . implode( "/", [ $this->chunk->id, $this->chunk->password, $segment->internal_id ] ), $curl_additional_params );
+        if( new \DateTime( $chunk->create_date ) > new DateTime( "2020-08-25 12:00" ) ){
+            return;
         }
+
+        $resource = $mh->createResource( $config[ 'old_delivery_endpoint' ] . implode( "/", [ $this->chunk->id, $this->chunk->password, $segment->internal_id ] ), $curl_additional_params );
+
 
         $mh->multiExec();
         $mh->multiCurlCloseAll();

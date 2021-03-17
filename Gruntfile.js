@@ -2,6 +2,7 @@ module.exports = function(grunt) {
 
     var es2015Preset = require('babel-preset-env');
     var reactPreset = require('babel-preset-react');
+    var sass = require('node-sass');
 
     grunt.initConfig( {
         browserify: {
@@ -24,6 +25,7 @@ module.exports = function(grunt) {
         sass: {
             dist: {
                 options: {
+                    implementation: sass,
                     sourceMap: false,
                     includePaths: ['static/src/css/sass/']
                 },
