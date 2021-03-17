@@ -6,6 +6,7 @@ const SegmentDeliveryModal = require('./components/modals/SegmentDeliveryModal')
         deliveryEnabled: null,
         signedJWT: null
     };
+    config.pluggable = {delivery_available: false}
 
     const _setDeliveryOrNull = function() {
         if(config.pluggable && !_.isUndefined(config.pluggable.airbnb_ontool)  ){
@@ -15,9 +16,13 @@ const SegmentDeliveryModal = require('./components/modals/SegmentDeliveryModal')
         if( config.pluggable && !_.isUndefined( config.pluggable.airbnb_auth_token ) ){
             sessionStorage.setItem( config.id_job + ":airbnb_auth_token", config.pluggable.airbnb_auth_token );
         }
+        if( config.pluggable && !_.isUndefined( config.pluggable.delivery_available ) ){
+            sessionStorage.setItem( config.id_job + ":delivery_available", config.pluggable.delivery_available );
+        }
         deliveryObj.deliveryEnabled = !!parseInt( sessionStorage.getItem( config.id_job + ':deliveryEnabled' ) );
         deliveryObj.showDelivery = !!parseInt( sessionStorage.getItem( config.id_job + ':showDelivery' ) );
         deliveryObj.signedJWT = sessionStorage.getItem( config.id_job + ":airbnb_auth_token" );
+        deliveryObj.jobDelivarable = sessionStorage.getItem( config.id_job + ":delivery_available" ) === 'true';
     };
 
     const setErrorNotification = function( title, message ){
@@ -40,8 +45,9 @@ const SegmentDeliveryModal = require('./components/modals/SegmentDeliveryModal')
     };
 
     _setDeliveryOrNull();
-
-    if ( deliveryObj.showDelivery && deliveryObj.deliveryEnabled ) {
+    if ( !deliveryObj.jobDelivarable ) {
+        setTimeout(()=>UI.openNotDeliverableJob(), 500);
+    } else if ( deliveryObj.showDelivery && deliveryObj.deliveryEnabled ) {
         $(document).on('setTranslation:success', function(e, data) {
             let segment = data.segment;
             $('.buttons .deliver', UI.getSegmentById(segment.sid)).removeClass('disabled');
@@ -117,6 +123,14 @@ const SegmentDeliveryModal = require('./components/modals/SegmentDeliveryModal')
                 modalName: 'segmentDeliveryModal',
                 text: 'This is an off-tool project. The segment delivery feature is disabled in Matecat. ' +
                     'You will have to deliver the whole project following the off-tool delivery procedure'
+            };
+            APP.ModalWindow.showModalComponent(SegmentDeliveryModal, props, "Segment delivery");
+        },
+        openNotDeliverableJob: function() {
+            const props ={
+                modalName: 'segmentDeliveryModal',
+                text: 'All phrases included in this job cannot be delivered from MateCat. ' +
+                    'To fix a phrase, please initiate a Manual Fix request from Dragoman.'
             };
             APP.ModalWindow.showModalComponent(SegmentDeliveryModal, props, "Segment delivery");
         },
