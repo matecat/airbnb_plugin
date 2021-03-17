@@ -109,7 +109,7 @@ const SegmentDeliveryModal = require('./components/modals/SegmentDeliveryModal')
                 UI.openSegmentDeliveryModal();
             }
         });
-    } else if ( !deliveryObj.jobDelivarable ) {
+    } else if (deliveryObj.showDelivery && !deliveryObj.jobDelivarable ) {
          setTimeout(()=>UI.openNotDeliverableJob(), 500);
     }
 
