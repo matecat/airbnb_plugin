@@ -26,6 +26,6 @@ class SegmentDeliveryDao extends DataAccess_AbstractDao {
 
         $results = $stmt->fetchAll();
 
-        return (count($results) === 0);
+        return count($results) > 0;
     }
 }
