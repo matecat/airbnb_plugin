@@ -3,7 +3,7 @@ const SegmentDeliveryModal = require('./components/modals/SegmentDeliveryModal')
 
     const deliveryObj = {
         showDelivery: null,
-        deliveryEnabled: null,
+        onTool: null,
         signedJWT: null
     };
 
@@ -18,7 +18,7 @@ const SegmentDeliveryModal = require('./components/modals/SegmentDeliveryModal')
         if( config.pluggable && !_.isUndefined( config.pluggable.delivery_available ) ){
             sessionStorage.setItem( config.id_job + ":delivery_available", config.pluggable.delivery_available );
         }
-        deliveryObj.deliveryEnabled = !!parseInt( sessionStorage.getItem( config.id_job + ':deliveryEnabled' ) );
+        deliveryObj.onTool = !!parseInt( sessionStorage.getItem( config.id_job + ':deliveryEnabled' ) );
         deliveryObj.showDelivery = !!parseInt( sessionStorage.getItem( config.id_job + ':showDelivery' ) );
         deliveryObj.signedJWT = sessionStorage.getItem( config.id_job + ":airbnb_auth_token" );
         deliveryObj.jobDelivarable = sessionStorage.getItem( config.id_job + ":delivery_available" ) === 'true';
@@ -44,9 +44,7 @@ const SegmentDeliveryModal = require('./components/modals/SegmentDeliveryModal')
     };
 
     _setDeliveryOrNull();
-    if ( !deliveryObj.jobDelivarable ) {
-        setTimeout(()=>UI.openNotDeliverableJob(), 500);
-    } else if ( deliveryObj.showDelivery && deliveryObj.deliveryEnabled ) {
+     if (deliveryObj.jobDelivarable && deliveryObj.showDelivery && deliveryObj.onTool ) {
         $(document).on('setTranslation:success', function(e, data) {
             let segment = data.segment;
             $('.buttons .deliver', UI.getSegmentById(segment.sid)).removeClass('disabled');
@@ -99,7 +97,7 @@ const SegmentDeliveryModal = require('./components/modals/SegmentDeliveryModal')
             });
             return false;
         });
-    } else if ( deliveryObj.showDelivery && !deliveryObj.deliveryEnabled ) {
+    } else if ( deliveryObj.showDelivery && !deliveryObj.onTool ) {
         $(document).on('click', 'section .buttons .deliver',  function(e) {
             e.preventDefault();
             e.stopPropagation();
@@ -111,6 +109,8 @@ const SegmentDeliveryModal = require('./components/modals/SegmentDeliveryModal')
                 UI.openSegmentDeliveryModal();
             }
         });
+    } else if ( !deliveryObj.jobDelivarable ) {
+         setTimeout(()=>UI.openNotDeliverableJob(), 500);
     }
 
     var originalRegisterFooterTabs = UI.registerFooterTabs;
@@ -234,13 +234,13 @@ const SegmentDeliveryModal = require('./components/modals/SegmentDeliveryModal')
             }
         },
         inputEditAreaEventHandler: function() {
-            if ( deliveryObj.deliveryEnabled ) {
+            if ( deliveryObj.onTool ) {
                 $('.buttons .deliver', UI.currentSegment).addClass('disabled');
             }
             originalInputEditAreaEventHandler.apply(this, arguments);
         },
         gotoNextSegment: function (  ) {
-            if ( deliveryObj.deliveryEnabled ) {
+            if ( deliveryObj.onTool ) {
                 return false
             } else {
                 originalgoToNextSegment.apply(this, arguments);
