@@ -6,7 +6,6 @@ const SegmentDeliveryModal = require('./components/modals/SegmentDeliveryModal')
         deliveryEnabled: null,
         signedJWT: null
     };
-    config.pluggable = {delivery_available: false}
 
     const _setDeliveryOrNull = function() {
         if(config.pluggable && !_.isUndefined(config.pluggable.airbnb_ontool)  ){
