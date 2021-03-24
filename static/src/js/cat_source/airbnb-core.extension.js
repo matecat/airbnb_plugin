@@ -128,8 +128,10 @@ const SegmentDeliveryModal = require('./components/modals/SegmentDeliveryModal')
         openNotDeliverableJob: function() {
             const props ={
                 modalName: 'segmentDeliveryModal',
-                text: 'All phrases included in this job cannot be delivered from MateCat. ' +
-                    'To fix a phrase, please initiate a Manual Fix request from Dragoman.'
+                text: "Due to an upgrade of the integration, phrase included in jobs older than 2020-08-25 cannot be delivered." +
+                    "</br>To fix and deliver a phrase, you can either:" +
+                    "<ul><li>Initiate a Manual Fix request from Dragoman (preferred).</li>" +
+                    "<li>Try to find the phrase in a more recent MateCat job and deliver from there.</li>"
             };
             APP.ModalWindow.showModalComponent(SegmentDeliveryModal, props, "Segment delivery");
         },
