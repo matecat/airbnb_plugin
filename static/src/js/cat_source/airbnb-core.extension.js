@@ -131,7 +131,7 @@ const SegmentDeliveryModal = require('./components/modals/SegmentDeliveryModal')
                 text: "Due to an upgrade of the integration, phrase included in jobs older than 2020-08-25 cannot be delivered." +
                     "</br>To fix and deliver a phrase, you can either:" +
                     "<ul><li>Initiate a Manual Fix request from Dragoman (preferred).</li>" +
-                    "<li>Try to find the phrase in a more recent MateCat job and deliver from there.</li>"
+                    "<li>Try to find the phrase in a more recent MateCat job and deliver from there.</li></ul>"
             };
             APP.ModalWindow.showModalComponent(SegmentDeliveryModal, props, "Segment delivery");
         },
