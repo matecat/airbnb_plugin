@@ -14,8 +14,6 @@ static/build
 .agignore
 .vagrant
 
-package-lock.json
-
 vendor
 composer.phar
 
