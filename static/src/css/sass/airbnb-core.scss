@@ -73,3 +73,12 @@ section {
     }
   }
 }
+
+.gl-search .set-glossary,
+.gl-search .comment a,
+.gl-search .switch-editing,
+.gl-search .switch-editing:hover,
+.graysmall:hover .switch-editing,
+.gl-search .trash{
+  display: none;
+}
