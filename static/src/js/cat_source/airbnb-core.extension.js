@@ -116,6 +116,8 @@ const SegmentDeliveryModal = require('./components/modals/SegmentDeliveryModal')
     var originalRegisterFooterTabs = UI.registerFooterTabs;
     var originalgoToNextSegment = UI.gotoNextSegment;
     var originalInputEditAreaEventHandler = UI.inputEditAreaEventHandler;
+
+    SegmentActions.addGlossaryItem = function (  ) {return false};
     $.extend(UI, {
         openSegmentDeliveryModal: function() {
             const props ={
