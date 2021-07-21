@@ -1,3 +1,5 @@
+import _ from 'lodash'
+
 const SegmentDeliveryModal = require('./components/modals/SegmentDeliveryModal').default ;
 (function() {
 
