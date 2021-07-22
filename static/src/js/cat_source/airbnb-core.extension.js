@@ -1,3 +1,4 @@
+import Cookies from 'js-cookie'
 import _ from 'lodash'
 
 const SegmentDeliveryModal = require('./components/modals/SegmentDeliveryModal').default ;
