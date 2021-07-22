@@ -1,3 +1,5 @@
+import Cookies from 'js-cookie'
+
 const SegmentDeliveryModal = require('./components/modals/SegmentDeliveryModal').default ;
 (function() {
 
