@@ -23,23 +23,39 @@
     "severities": [
       {
         "label": "Preferential edit",
+        "code": "Pre",
         "dqf_id" : 0,
         "penalty": 0
       },
       {
         "label": "Repetition",
+        "code": "Rep",
         "dqf_id" : 1,
         "penalty": 0
       },
       {
         "label": "Minor",
+        "code": "Min",
         "dqf_id" : 2,
         "penalty": 1
       },
       {
         "label": "Major",
+        "code": "Maj",
         "dqf_id" : 3,
         "penalty": 2
+      },
+      {
+        "label": "Context Minor",
+        "code": "CMin",
+        "dqf_id" : 4,
+        "penalty": 0
+      },
+      {
+        "label": "Context Major",
+        "code": "CMax",
+        "dqf_id" : 5,
+        "penalty": 0
       }
     ],
     "passfail" : {
