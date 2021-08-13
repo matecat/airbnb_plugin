@@ -134,6 +134,7 @@ class Airbnb extends BaseFeature {
         if(
             isset($postInput[ 'context_before' ]) and
             isset($segmentsList->id_segment) and
+            isset($segmentsList->id_segment->segment) and
             strpos( $postInput[ 'context_before' ], 'phrase_key|¶|' ) !== false
         ){
             $segmentsList->id_before->segment = md5( str_replace( 'phrase_key|¶|', '', $postInput[ 'context_before' ] ) . $segmentsList->id_segment->segment );
