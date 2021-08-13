@@ -131,13 +131,17 @@ class Airbnb extends BaseFeature {
      */
     public function rewriteContributionContexts( $segmentsList, $postInput ) {
 
-        if( strpos( $postInput[ 'context_before' ], 'phrase_key|¶|' ) !== false ){
+        if(
+            isset($postInput[ 'context_before' ]) and
+            isset($segmentsList->id_segment) and
+            strpos( $postInput[ 'context_before' ], 'phrase_key|¶|' ) !== false
+        ){
             $segmentsList->id_before->segment = md5( str_replace( 'phrase_key|¶|', '', $postInput[ 'context_before' ] ) . $segmentsList->id_segment->segment );
         } else {
             $segmentsList->id_before->segment = md5( str_replace( 'translation_context|¶|', '', $postInput[ 'context_before' ] ) . $segmentsList->id_segment->segment );
         }
 
-        $segmentsList->id_after           = null;
+        $segmentsList->id_after = null;
     }
 
     /**
