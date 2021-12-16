@@ -1,6 +1,6 @@
 import Cookies from 'js-cookie'
 import _ from 'lodash'
-// import {segmentDelivery} from './api/segmentDelivery'
+import {segmentDelivery} from './api/segmentDelivery'
 
 const SegmentDeliveryModal =
   require('./components/modals/SegmentDeliveryModal').default
@@ -101,59 +101,8 @@ const SegmentDeliveryModal =
         return
       }
 
-      // segmentDelivery(idSeg, deliveryObj.signedJWT)
-      //   .then((response) => {
-      //     setSuccessNotification(
-      //       'Segment delivered',
-      //       'Segment ' + idSeg + ' was delivered.',
-      //     )
-      //     if (window.opener) {
-      //       window.opener.postMessage(
-      //         {
-      //           name: 'segmentTranslationChange',
-      //           idSegment: toString(idSeg),
-      //           translation: response.translation,
-      //         },
-      //         '*',
-      //       )
-      //     }
-      //   })
-      //   .catch((e) => {
-      //     switch (e.status) {
-      //       case 401:
-      //         setErrorNotification(
-      //           'Segment not delivered',
-      //           'Session expired.<br/>Please Login again into TranslationOS.',
-      //         )
-      //         break
-      //       case 503:
-      //         setErrorNotification(
-      //           'Segment not delivered',
-      //           'We experienced an issue, please try again in 5 minutes, if the error occurs again, please, contact <a href="mailto:support@matecat.com">support@matecat.com</a>.',
-      //         )
-      //         break
-      //       default:
-      //         setErrorNotification(
-      //           'Segment not delivered',
-      //           'Oops we got an Error. Please, contact <a href="mailto:support@matecat.com">support@matecat.com</a>.',
-      //         )
-      //         break
-      //     }
-      //   })
-      $.ajax({
-        data: {
-          id_segment: idSeg,
-          jwt: deliveryObj.signedJWT,
-        },
-        type: 'post',
-        url:
-          '/plugins/airbnb/job/' +
-          config.id_job +
-          '/' +
-          config.password +
-          '/segment_delivery',
-      })
-        .done((response) => {
+      segmentDelivery(idSeg, deliveryObj.signedJWT)
+        .then((response) => {
           setSuccessNotification(
             'Segment delivered',
             'Segment ' + idSeg + ' was delivered.',
@@ -169,7 +118,7 @@ const SegmentDeliveryModal =
             )
           }
         })
-        .fail((e) => {
+        .catch((e) => {
           switch (e.status) {
             case 401:
               setErrorNotification(
