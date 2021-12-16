@@ -1,3 +1,6 @@
+const {getBabelPresets} = require('./babel.utils')
+const babelifyTransform = ['babelify', getBabelPresets('browser')]
+
 module.exports = function (grunt) {
   var sass = require('node-sass')
 
@@ -5,12 +8,7 @@ module.exports = function (grunt) {
     browserify: {
       core: {
         options: {
-          transform: [
-            [
-              'babelify',
-              {presets: ['@babel/preset-react', ['@babel/preset-env']]},
-            ],
-          ],
+          transform: [babelifyTransform],
           browserifyOptions: {
             paths: [__dirname + '/node_modules'],
           },
