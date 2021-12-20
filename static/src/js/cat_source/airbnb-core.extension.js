@@ -1,5 +1,6 @@
 import Cookies from 'js-cookie'
 import _ from 'lodash'
+import {segmentDelivery} from './api/segmentDelivery'
 
 const SegmentDeliveryModal =
   require('./components/modals/SegmentDeliveryModal').default
@@ -100,20 +101,8 @@ const SegmentDeliveryModal =
         return
       }
 
-      $.ajax({
-        data: {
-          id_segment: idSeg,
-          jwt: deliveryObj.signedJWT,
-        },
-        type: 'post',
-        url:
-          '/plugins/airbnb/job/' +
-          config.id_job +
-          '/' +
-          config.password +
-          '/segment_delivery',
-      })
-        .done((response) => {
+      segmentDelivery(idSeg, deliveryObj.signedJWT)
+        .then((response) => {
           setSuccessNotification(
             'Segment delivered',
             'Segment ' + idSeg + ' was delivered.',
@@ -129,7 +118,7 @@ const SegmentDeliveryModal =
             )
           }
         })
-        .fail((e) => {
+        .catch((e) => {
           switch (e.status) {
             case 401:
               setErrorNotification(
