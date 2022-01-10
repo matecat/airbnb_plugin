@@ -14,39 +14,33 @@
             "penalty": 0
           },
           {
-            "label": "Client Edit",
-            "code": "Cli",
-            "dqf_id" : 7,
-            "penalty": 0
-          },
-          {
             "label": "Repetition",
             "code": "Rep",
-            "dqf_id" : 8,
+            "dqf_id" : 7,
             "penalty": 0
           },
           {
             "label": "Minor",
             "code": "Min",
-            "dqf_id" : 9,
+            "dqf_id" : 8,
             "penalty": 1
           },
           {
             "label": "Major",
             "code": "Maj",
-            "dqf_id" : 10,
+            "dqf_id" : 9,
             "penalty": 2
           },
           {
             "label": "Context Minor",
             "code": "CMin",
-            "dqf_id" : 11,
+            "dqf_id" : 10,
             "penalty": 0
           },
           {
             "label": "Context Major",
             "code": "CMaj",
-            "dqf_id" : 12,
+            "dqf_id" : 11,
             "penalty": 0
           }
         ]
@@ -63,6 +57,17 @@
         "label": "Linguistic (Punctuation, Spelling, Grammar, Locale conventions)",
         "code": "LNG"
       },{
+        "label": "Client Edit",
+        "code": "CLI",
+        "severities": [
+          {
+            "label": "Polishing",
+            "code": "Pol",
+            "dqf_id" : 12,
+            "penalty": 0
+          }
+        ]
+      },{
         "label": "Kudos",
         "code": "KUD",
         "severities": [
@@ -76,12 +81,6 @@
       }
     ],
     "severities": [
-      {
-        "label": "Client Edit",
-        "code": "Cli",
-        "dqf_id" : 7,
-        "penalty": 0
-      },
       {
         "label": "Repetition",
         "code": "Rep",
