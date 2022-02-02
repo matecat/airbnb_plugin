@@ -55,8 +55,8 @@
         "code": "CLI",
         "severities": [
           {
-            "label": "Polishing",
-            "code": "Pol",
+            "label": "Other",
+            "code": "+",
             "penalty": 0
           }
         ]
@@ -65,8 +65,8 @@
         "code": "KUD",
         "severities": [
           {
-            "label": "Polishing",
-            "code": "Pol",
+            "label": "Other",
+            "code": "+",
             "penalty": 0
           }
         ]
