@@ -8,7 +8,7 @@
         "code": "STY",
         "severities": [
           {
-            "label": "Polishing",
+            "label": "Polish",
             "code": "Pol",
             "dqf_id" : 0,
             "penalty": 0
