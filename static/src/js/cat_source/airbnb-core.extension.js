@@ -1,6 +1,7 @@
 import Cookies from 'js-cookie'
 import _ from 'lodash'
 import {segmentDelivery} from './api/segmentDelivery'
+import CommonUtils from '../../../../../../public/js/cat_source/es6/utils/commonUtils'
 
 const SegmentDeliveryModal =
   require('./components/modals/SegmentDeliveryModal').default
@@ -59,7 +60,7 @@ const SegmentDeliveryModal =
   }
 
   const _setNotification = function (title, message, type) {
-    APP.addNotification({
+    CatToolActions.addNotification({
       title: title,
       text: message,
       type: type,
