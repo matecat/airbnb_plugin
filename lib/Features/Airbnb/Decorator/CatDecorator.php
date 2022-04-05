@@ -7,6 +7,7 @@ use AbstractCatDecorator;
 use Features\Airbnb;
 use Features\Airbnb\Utils\Routes;
 use Features\Airbnb\Model\SegmentDelivery\SegmentDeliveryDao;
+use INIT;
 
 class CatDecorator extends AbstractCatDecorator {
     /**
@@ -43,7 +44,17 @@ class CatDecorator extends AbstractCatDecorator {
         }
 
         unset( $_COOKIE[ Airbnb::DELIVERY_COOKIE_PREFIX . $chunk->id ] );
-        setcookie( Airbnb::DELIVERY_COOKIE_PREFIX . $chunk->id, null, strtotime( '-20 minutes' ), '/', \INIT::$COOKIE_DOMAIN );
+        setcookie( Airbnb::DELIVERY_COOKIE_PREFIX . $chunk->id,
+                null,
+                [
+                        'expires'  => strtotime( '-20 minutes' ),
+                        'path'     => '/',
+                        'domain'   => INIT::$COOKIE_DOMAIN,
+                        'secure'   => true,
+                        'httponly' => true,
+                        'samesite' => 'None',
+                ]
+        );
     }
 
     protected function decorateForTranslate(){
