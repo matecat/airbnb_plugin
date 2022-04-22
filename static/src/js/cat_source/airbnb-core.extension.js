@@ -616,8 +616,6 @@ const SegmentDeliveryModal =
         'bg',
         'et',
         'sw',
-        'zu',
-        'xh',
       ],
 
       french_like: ['fr', 'hy', 'hi', 'pt-BR', 'xh', 'zu'],
