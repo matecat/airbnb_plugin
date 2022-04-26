@@ -1,7 +1,6 @@
 import Cookies from 'js-cookie'
 import _ from 'lodash'
 import {segmentDelivery} from './api/segmentDelivery'
-import ModalsActions from '../../../../../../public/js/cat_source/es6/actions/ModalsActions'
 
 const SegmentDeliveryModal =
   require('./components/modals/SegmentDeliveryModal').default
