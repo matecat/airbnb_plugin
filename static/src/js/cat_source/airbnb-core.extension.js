@@ -417,7 +417,7 @@ const SegmentDeliveryModal =
         num_forms: 2,
 
         doc: [
-          ' Main translation',
+          'Main translation',
           'Duplicate form 1 or translate differently as needed (tags must be preserved)',
         ],
 
@@ -460,10 +460,10 @@ const SegmentDeliveryModal =
         num_forms: 4,
 
         doc: [
-          'When count is 1 – one',
-          'When count ends in 2~4, excluding 12~14 (2, 3, 4, 22, ...) – few',
-          'Everything else (0, 5, 6, ...) – many',
-          'Decimal fractions - other',
+          'When count is 1',
+          'When count ends in 2~4, excluding 12~14 (2, 3, 4, 22, ...)',
+          'Other integers (0, 5, 6, ...)',
+          'Fractions',
         ],
 
         rule: 'lambda { |n| (n == 1 ? 0 : n % 10 >= 2 && n % 10 <= 4 && (n % 100 < 10 || n % 100 >= 20) ? 1 : 2) }',
@@ -592,7 +592,7 @@ const SegmentDeliveryModal =
     }
 
     var PLURAL_TYPE_NAME_TO_LANGUAGES = {
-      chinese_like: ['ja', 'ms', 'zh', 'zh-TW'],
+      chinese_like: ['ja', 'ms', 'zh', 'zh-TW', 'ko', 'vi'],
 
       german_like: [
         'da',
@@ -616,13 +616,11 @@ const SegmentDeliveryModal =
         'bg',
         'et',
         'sw',
-        'zu',
-        'xh',
       ],
 
-      french_like: ['fr', 'hy', 'pt', 'hi'],
+      french_like: ['fr', 'hy', 'hi', 'pt-BR', 'xh', 'zu'],
 
-      thai_like: ['az', 'id', 'ko', 'th', 'tr', 'vi'],
+      thai_like: ['az', 'id', 'th', 'tr'],
 
       russian_like: ['hr', 'ru', 'bs', 'me', 'sr', 'uk'],
 
