@@ -1,5 +1,4 @@
 import Cookies from 'js-cookie'
-import ModalsActions from '../../../../../../../../public/js/cat_source/es6/actions/ModalsActions'
 
 class SegmentDeliveryModal extends React.Component {
   constructor(props) {
