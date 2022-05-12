@@ -356,12 +356,22 @@ const SegmentDeliveryModal =
         //base64 of pipes "||||", now they are in tag form
         let targetPrefix = config.target_rfc.split('-')[0]
         let langLike
+        //Search the dialect
         _.forOwn(PLURAL_TYPE_NAME_TO_LANGUAGES, function (value, key) {
-          if (value.indexOf(targetPrefix) !== -1) {
+          if (value.indexOf(config.target_rfc) !== -1) {
             langLike = key
             return false
           }
         })
+        // In not search de prefix
+        if (!langLike) {
+          _.forOwn(PLURAL_TYPE_NAME_TO_LANGUAGES, function (value, key) {
+            if (value.indexOf(targetPrefix) !== -1) {
+              langLike = key
+              return false
+            }
+          })
+        }
         if (!_.isUndefined(langLike) && PLURAL_TYPES[langLike]) {
           let rules = PLURAL_TYPES[langLike]
           let html = (
