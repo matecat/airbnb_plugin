@@ -173,7 +173,7 @@ const SegmentDeliveryModal =
           'This is an off-tool project. The segment delivery feature is disabled in Matecat. ' +
           'You will have to deliver the whole project following the off-tool delivery procedure',
       }
-      ModalWindow.showModalComponent(
+      ModalsActions.showModalComponent(
         SegmentDeliveryModal,
         props,
         'Segment delivery',
@@ -188,7 +188,7 @@ const SegmentDeliveryModal =
           '<ul><li>Initiate a Manual Fix request from Dragoman (preferred).</li>' +
           '<li>Try to find the phrase in a more recent MateCat job and deliver from there.</li></ul>',
       }
-      ModalWindow.showModalComponent(
+      ModalsActions.showModalComponent(
         SegmentDeliveryModal,
         props,
         'Segment delivery',
