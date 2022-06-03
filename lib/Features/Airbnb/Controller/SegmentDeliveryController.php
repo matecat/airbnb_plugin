@@ -16,6 +16,7 @@ use API\V2\KleinController;
 use API\V2\Validators\ChunkPasswordValidator;
 use Chunks_ChunkStruct;
 use Constants_JobStatus;
+use CookieManager;
 use DateTime;
 use DomainException;
 use Features\Airbnb;
@@ -84,7 +85,7 @@ class SegmentDeliveryController extends KleinController {
         $jwt->setTimeToLive( 60 * 60 ); //set 60 minutes
 
         //by setting the cookie this endpoint is not stateless and MUST be used by clients
-        setcookie( Airbnb::DELIVERY_COOKIE_PREFIX . $this->request->param( 'id_job' ),
+        CookieManager::setCookie( Airbnb::DELIVERY_COOKIE_PREFIX . $this->request->param( 'id_job' ),
                 $jwt->jsonSerialize(),
                 [
                         'expires'  =>  strtotime( '+2 minutes' ),

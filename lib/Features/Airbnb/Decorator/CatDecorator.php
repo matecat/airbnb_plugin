@@ -4,6 +4,7 @@ namespace Features\Airbnb\Decorator;
 
 
 use AbstractCatDecorator;
+use CookieManager;
 use Features\Airbnb;
 use Features\Airbnb\Utils\Routes;
 use Features\Airbnb\Model\SegmentDelivery\SegmentDeliveryDao;
@@ -44,7 +45,7 @@ class CatDecorator extends AbstractCatDecorator {
         }
 
         unset( $_COOKIE[ Airbnb::DELIVERY_COOKIE_PREFIX . $chunk->id ] );
-        setcookie( Airbnb::DELIVERY_COOKIE_PREFIX . $chunk->id,
+        CookieManager::setCookie( Airbnb::DELIVERY_COOKIE_PREFIX . $chunk->id,
                 null,
                 [
                         'expires'  => strtotime( '-20 minutes' ),
