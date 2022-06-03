@@ -27,7 +27,7 @@ class SegmentDeliveryModal extends React.Component {
   }
 
   closeModal() {
-    ModalWindow.onCloseModal()
+    ModalsActions.onCloseModal()
   }
 
   componentDidUpdate() {}

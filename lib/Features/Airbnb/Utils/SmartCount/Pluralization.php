@@ -16,14 +16,14 @@ class Pluralization
             case "zh-TW":
             case "ms-MY":
             case "ja-JP":
+            case "ko-KR":
+            case "vi-VN":
                 return 1;
 
             case "az-AZ":
             case "id-ID":
-            case "ko-KR":
             case "th-TH":
             case "tr-TR":
-            case "vi-VN":
             case "bg-BG":
             case "ca-ES":
             case "da-DK":
