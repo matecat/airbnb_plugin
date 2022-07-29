@@ -660,6 +660,16 @@ const SegmentDeliveryModal =
     }
   }
 
+  function ovverrideSegmentUtilFn(SegmentUtils) {
+    const originalFn = SegmentUtils.segmentHasNote
+    SegmentUtils.segmentHasNote = (segment) => {
+      const hasOrginalNotes = originalFn.apply(this, arguments)
+      return (
+        hasOrginalNotes || segment.segment.indexOf('"base64:fHx8fA=="') > -1
+      )
+    }
+  }
+
   function overrideGetTranslateButtons(SegmentButtons) {
     var originalGetTranslateButton = SegmentButtons.prototype.getTranslateButton
     SegmentButtons.prototype.getTranslateButton = function () {
@@ -773,6 +783,7 @@ const SegmentDeliveryModal =
   overrideSetDefaultTabOpen(SegmentFooter)
   overrideGetTranslateButtons(SegmentButtons)
   overrideGetReviseButtons(SegmentButtons)
+  ovverrideSegmentUtilFn(SegmentUtils)
 
   //Delete MT matches for japanese target and en-Us source
   //overrideGetContributionsSuccess(SegmentActions);
