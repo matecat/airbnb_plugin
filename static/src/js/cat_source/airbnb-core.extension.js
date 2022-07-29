@@ -199,14 +199,10 @@ const SegmentDeliveryModal =
       SegmentActions.registerTab('messages', true, true)
     },
     getContextBefore: function (segmentId) {
-      let $segment = $('#segment-' + segmentId)
       let segmentObj
       let phraseKeyNote
       try {
-        segmentObj = SegmentStore.getSegmentByIdToJS(
-          segmentId,
-          UI.getSegmentFileId($segment),
-        )
+        segmentObj = SegmentStore.getSegmentByIdToJS(segmentId)
         phraseKeyNote = segmentObj.notes.find((item) => {
           return (
             item.note.indexOf('phrase_key|¶|') >= 0 ||
