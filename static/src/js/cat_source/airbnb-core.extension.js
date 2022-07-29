@@ -392,6 +392,11 @@ const SegmentDeliveryModal =
           }
         }
       }
+      // metadata notes
+      if (this.props.metadata) {
+        notesHtml.push(this.getMetadataNoteTemplate())
+      }
+
       if (notesHtml.length === 0) {
         let html = (
           <div className="note" key={'note-0'}>
@@ -663,7 +668,7 @@ const SegmentDeliveryModal =
   function ovverrideSegmentUtilFn(SegmentUtils) {
     const originalFn = SegmentUtils.segmentHasNote
     SegmentUtils.segmentHasNote = (segment) => {
-      const hasOrginalNotes = originalFn.apply(this, arguments)
+      const hasOrginalNotes = originalFn(segment)
       return (
         hasOrginalNotes || segment.segment.indexOf('"base64:fHx8fA=="') > -1
       )
