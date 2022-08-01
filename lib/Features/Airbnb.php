@@ -23,6 +23,7 @@ use Matecat\SubFiltering\Filters\LtGtDoubleDecode;
 use Matecat\SubFiltering\Filters\PlaceHoldXliffTags;
 use Matecat\SubFiltering\Filters\SmartCounts;
 use Matecat\SubFiltering\Filters\Variables;
+use stdClass;
 use TaskRunner\Commons\QueueElement;
 use Users_UserStruct;
 
@@ -61,7 +62,7 @@ class Airbnb extends BaseFeature {
 
                 if ( strpos( $entry, 'phrase_key|¶|' ) !== false ) {
                     $_segment_metadata[ 'additional_params' ][ 'spice' ] = md5( str_replace( 'phrase_key|¶|', '', $entry ) . $_segment_metadata[ 'segment' ] );
-                } elseif ( strpos( $entry, 'translation_context|¶|' ) !== false ){
+                } elseif ( strpos( $entry, 'translation_context|¶|' ) !== false ) {
                     $_segment_metadata[ 'additional_params' ][ 'spice' ] = md5( str_replace( 'translation_context|¶|', '', $entry ) . $_segment_metadata[ 'segment' ] );
                 }
 
@@ -131,13 +132,17 @@ class Airbnb extends BaseFeature {
      */
     public function rewriteContributionContexts( $segmentsList, $postInput ) {
 
-        if( strpos( $postInput[ 'context_before' ], 'phrase_key|¶|' ) !== false ){
+        if ( !is_object( $segmentsList->id_before ) ) {
+            $segmentsList->id_before = new Segments_SegmentStruct();
+        }
+
+        if ( strpos( $postInput[ 'context_before' ], 'phrase_key|¶|' ) !== false ) {
             $segmentsList->id_before->segment = md5( str_replace( 'phrase_key|¶|', '', $postInput[ 'context_before' ] ) . $segmentsList->id_segment->segment );
         } else {
             $segmentsList->id_before->segment = md5( str_replace( 'translation_context|¶|', '', $postInput[ 'context_before' ] ) . $segmentsList->id_segment->segment );
         }
 
-        $segmentsList->id_after           = null;
+        $segmentsList->id_after = null;
     }
 
     /**
@@ -285,36 +290,36 @@ class Airbnb extends BaseFeature {
             //
             // Finally, the target tag map is compared to $expectedTargetTagMap
             //
-            $sourceTagMap = [];
-            $sourceSplittedByPipeSep = preg_split('/<ph id="mtc_[0-9]{0,10}" equiv-text="base64:fHx8fA=="\/>/', $QA->getSourceSeg() );
+            $sourceTagMap            = [];
+            $sourceSplittedByPipeSep = preg_split( '/<ph id="mtc_[0-9]{0,10}" equiv-text="base64:fHx8fA=="\/>/', $QA->getSourceSeg() );
 
-            foreach ($sourceSplittedByPipeSep as $item){
-                preg_match_all('/equiv-text="base64:[a-zA-Z0-9=]{1,}/', $item, $itemSegMatch );
+            foreach ( $sourceSplittedByPipeSep as $item ) {
+                preg_match_all( '/equiv-text="base64:[a-zA-Z0-9=]{1,}/', $item, $itemSegMatch );
                 //preg_match_all( '/<ph id ?= ?[\'"]mtc_[0-9]{1,9}?[\'"] equiv-text="base64:[a-zA-Z0-9=]{1,}"\/>/', $item, $itemSegMatch );
-                $sourceTagMap[] = $itemSegMatch[0];
+                $sourceTagMap[] = $itemSegMatch[ 0 ];
             }
 
-            $expectedTargetTagMap[] = $sourceTagMap[0];
+            $expectedTargetTagMap[] = $sourceTagMap[ 0 ];
 
-            for ($i=1; $i < $targetPluralFormsCount; $i++){
-                $expectedTargetTagMap[] = $sourceTagMap[1];
+            for ( $i = 1; $i < $targetPluralFormsCount; $i++ ) {
+                $expectedTargetTagMap[] = $sourceTagMap[ 1 ];
             }
 
-            $targetTagMap = [];
-            $targetSplittedByPipeSep = preg_split('/<ph id="mtc_[0-9]{0,10}" equiv-text="base64:fHx8fA=="\/>/', $QA->getTargetSeg() );
+            $targetTagMap            = [];
+            $targetSplittedByPipeSep = preg_split( '/<ph id="mtc_[0-9]{0,10}" equiv-text="base64:fHx8fA=="\/>/', $QA->getTargetSeg() );
 
-            foreach ($targetSplittedByPipeSep as $item){
+            foreach ( $targetSplittedByPipeSep as $item ) {
                 //preg_match_all( '/<ph id ?= ?[\'"]mtc_[0-9]{1,9}?[\'"] equiv-text="base64:[a-zA-Z0-9=]{1,}"\/>/', $item, $itemSegMatch );
-                preg_match_all('/equiv-text="base64:[a-zA-Z0-9=]{1,}/', $item, $itemSegMatch );
-                $targetTagMap[] = $itemSegMatch[0];
+                preg_match_all( '/equiv-text="base64:[a-zA-Z0-9=]{1,}/', $item, $itemSegMatch );
+                $targetTagMap[] = $itemSegMatch[ 0 ];
             }
 
-            sort($expectedTargetTagMap[0]);
-            sort($expectedTargetTagMap[1]);
-            sort($targetTagMap[0]);
-            sort($targetTagMap[1]);
+            sort( $expectedTargetTagMap[ 0 ] );
+            sort( $expectedTargetTagMap[ 1 ] );
+            sort( $targetTagMap[ 0 ] );
+            sort( $targetTagMap[ 1 ] );
 
-            if( $expectedTargetTagMap[0] != $targetTagMap[0] or $expectedTargetTagMap[1] != $targetTagMap[1]  ){
+            if ( $expectedTargetTagMap[ 0 ] != $targetTagMap[ 0 ] or $expectedTargetTagMap[ 1 ] != $targetTagMap[ 1 ] ) {
                 $QA->addCustomError( [
                         'code'  => \QA::SMART_COUNT_MISMATCH,
                         'debug' => '%{smart_count} tag count mismatch',
@@ -334,11 +339,12 @@ class Airbnb extends BaseFeature {
         return $errorType;
     }
 
-    public static function analysisBeforeMTGetContribution( $config, Engines_AbstractEngine $engine, QueueElement $queueElement ){
-        if( $engine instanceof Engines_MMT ){
+    public static function analysisBeforeMTGetContribution( $config, Engines_AbstractEngine $engine, QueueElement $queueElement ) {
+        if ( $engine instanceof Engines_MMT ) {
             //tell to the MMT that this is the analysis phase ( override default configuration )
             $engine->setAnalysis( false );
         }
+
         return $config;
     }
 

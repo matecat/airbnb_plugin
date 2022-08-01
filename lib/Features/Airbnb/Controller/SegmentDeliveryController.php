@@ -16,10 +16,12 @@ use API\V2\KleinController;
 use API\V2\Validators\ChunkPasswordValidator;
 use Chunks_ChunkStruct;
 use Constants_JobStatus;
+use CookieManager;
 use DateTime;
 use DomainException;
 use Features\Airbnb;
 use Features\Airbnb\Controller\Validators\AirbnbTOSAuthLoginValidator;
+use INIT;
 use InvalidArgumentException;
 use Jobs_JobDao;
 use LQA\ChunkReviewStruct;
@@ -83,7 +85,17 @@ class SegmentDeliveryController extends KleinController {
         $jwt->setTimeToLive( 60 * 60 ); //set 60 minutes
 
         //by setting the cookie this endpoint is not stateless and MUST be used by clients
-        setcookie( Airbnb::DELIVERY_COOKIE_PREFIX . $this->request->param( 'id_job' ), $jwt->jsonSerialize(), strtotime( '+2 minutes' ), '/', \INIT::$COOKIE_DOMAIN );
+        CookieManager::setCookie( Airbnb::DELIVERY_COOKIE_PREFIX . $this->request->param( 'id_job' ),
+                $jwt->jsonSerialize(),
+                [
+                        'expires'  =>  strtotime( '+2 minutes' ),
+                        'path'     => '/',
+                        'domain'   => INIT::$COOKIE_DOMAIN,
+                        'secure'   => true,
+                        'httponly' => true,
+                        'samesite' => 'None',
+                ]
+        );
 
         if ( $this->chunk->isArchiveable() || $this->chunk->status_owner == Constants_JobStatus::STATUS_ARCHIVED ) {
 
@@ -170,7 +182,7 @@ class SegmentDeliveryController extends KleinController {
         $curl_additional_params = [
                 CURLOPT_HEADER         => false,
                 CURLOPT_RETURNTRANSFER => true,
-                CURLOPT_USERAGENT      => \INIT::MATECAT_USER_AGENT . \INIT::$BUILD_NUMBER,
+                CURLOPT_USERAGENT      => INIT::MATECAT_USER_AGENT . INIT::$BUILD_NUMBER,
                 CURLOPT_TIMEOUT        => 60,
                 CURLOPT_CONNECTTIMEOUT => 10,
                 CURLOPT_SSL_VERIFYPEER => true,
