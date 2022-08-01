@@ -199,14 +199,10 @@ const SegmentDeliveryModal =
       SegmentActions.registerTab('messages', true, true)
     },
     getContextBefore: function (segmentId) {
-      let $segment = $('#segment-' + segmentId)
       let segmentObj
       let phraseKeyNote
       try {
-        segmentObj = SegmentStore.getSegmentByIdToJS(
-          segmentId,
-          UI.getSegmentFileId($segment),
-        )
+        segmentObj = SegmentStore.getSegmentByIdToJS(segmentId)
         phraseKeyNote = segmentObj.notes.find((item) => {
           return (
             item.note.indexOf('phrase_key|¶|') >= 0 ||
@@ -664,6 +660,16 @@ const SegmentDeliveryModal =
     }
   }
 
+  function ovverrideSegmentUtilFn(SegmentUtils) {
+    const originalFn = SegmentUtils.segmentHasNote
+    SegmentUtils.segmentHasNote = (segment) => {
+      const hasOrginalNotes = originalFn.apply(this, arguments)
+      return (
+        hasOrginalNotes || segment.segment.indexOf('"base64:fHx8fA=="') > -1
+      )
+    }
+  }
+
   function overrideGetTranslateButtons(SegmentButtons) {
     var originalGetTranslateButton = SegmentButtons.prototype.getTranslateButton
     SegmentButtons.prototype.getTranslateButton = function () {
@@ -777,6 +783,7 @@ const SegmentDeliveryModal =
   overrideSetDefaultTabOpen(SegmentFooter)
   overrideGetTranslateButtons(SegmentButtons)
   overrideGetReviseButtons(SegmentButtons)
+  ovverrideSegmentUtilFn(SegmentUtils)
 
   //Delete MT matches for japanese target and en-Us source
   //overrideGetContributionsSuccess(SegmentActions);
