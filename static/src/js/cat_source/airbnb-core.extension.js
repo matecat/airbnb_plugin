@@ -663,7 +663,7 @@ const SegmentDeliveryModal =
   function ovverrideSegmentUtilFn(SegmentUtils) {
     const originalFn = SegmentUtils.segmentHasNote
     SegmentUtils.segmentHasNote = (segment) => {
-      const hasOrginalNotes = originalFn.apply(this, arguments)
+      const hasOrginalNotes = originalFn(segment)
       return (
         hasOrginalNotes || segment.segment.indexOf('"base64:fHx8fA=="') > -1
       )
