@@ -392,6 +392,11 @@ const SegmentDeliveryModal =
           }
         }
       }
+      // metadata notes
+      if (this.props.metadata) {
+        notesHtml.push(this.getMetadataNoteTemplate())
+      }
+
       if (notesHtml.length === 0) {
         let html = (
           <div className="note" key={'note-0'}>
