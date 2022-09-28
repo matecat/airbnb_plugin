@@ -329,21 +329,39 @@ const SegmentDeliveryModal =
       let notesHtml = []
       let self = this
       if (this.props.notes) {
+        const {metadata} = this.props;
         this.props.notes.forEach(function (item, index) {
           if (item.note && item.note !== '') {
             if (item.note.indexOf('¶') === -1) {
-              let split = item.note.split(':')
-              if (split.length > 1) {
-                let note = item.note.replace(split[0] + ':', '')
-                note = TextUtils.replaceUrl(note.replace(/[ ]*\n/g, '<br>\n'))
-                let html = (
-                  <div className="note" key={'note-' + index}>
-                    <span className="note-label">{split[0]}:</span>
-                    <span dangerouslySetInnerHTML={self.allowHTML(note)} />
-                  </div>
-                )
-                notesHtml.push(html)
+              // jsont2
+              if(metadata && 
+                metadata.find(({meta_key}) => meta_key === 'id_content') && 
+                metadata.find(({meta_key}) => meta_key === 'id_request')
+                ){
+                  let note = item.note
+                  note = TextUtils.replaceUrl(note.replace(/[ ]*\n/g, '<br>\n'))
+                  const html = (
+                    <div className="note" key={'note-' + index}>
+                      <span className="note-label">Note: </span>
+                      <span dangerouslySetInnerHTML={self.allowHTML(note)} />
+                    </div>
+                  )
+                  notesHtml.push(html)
+              }else{
+                let split = item.note.split(':')
+                if (split.length > 1) {
+                  let note = item.note.replace(split[0] + ':', '')
+                  note = TextUtils.replaceUrl(note.replace(/[ ]*\n/g, '<br>\n'))
+                  const html = (
+                    <div className="note" key={'note-' + index}>
+                      <span className="note-label">{split[0]}:</span>
+                      <span dangerouslySetInnerHTML={self.allowHTML(note)} />
+                    </div>
+                  )
+                  notesHtml.push(html)
+                }
               }
+
             }
           }
         })
