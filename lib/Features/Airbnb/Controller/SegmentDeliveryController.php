@@ -97,7 +97,7 @@ class SegmentDeliveryController extends KleinController {
                 ]
         );
 
-        if ( $this->chunk->isArchiveable() || $this->chunk->status_owner == Constants_JobStatus::STATUS_ARCHIVED ) {
+        if ( $this->chunk->status_owner == Constants_JobStatus::STATUS_ARCHIVED ) {
 
             Jobs_JobDao::updateJobStatus( $this->chunk, Constants_JobStatus::STATUS_ACTIVE );
             $lastSegmentsList = Translations_SegmentTranslationDao::getMaxSegmentIdsFromJob( $this->chunk );
