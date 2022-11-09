@@ -329,25 +329,26 @@ const SegmentDeliveryModal =
       let notesHtml = []
       let self = this
       if (this.props.notes) {
-        const {metadata} = this.props;
+        const {metadata} = this.props
         this.props.notes.forEach(function (item, index) {
           if (item.note && item.note !== '') {
             if (item.note.indexOf('¶') === -1) {
               // jsont2
-              if(metadata && 
-                metadata.find(({meta_key}) => meta_key === 'id_content') && 
+              if (
+                metadata &&
+                metadata.find(({meta_key}) => meta_key === 'id_content') &&
                 metadata.find(({meta_key}) => meta_key === 'id_request')
-                ){
-                  let note = item.note
-                  note = TextUtils.replaceUrl(note.replace(/[ ]*\n/g, '<br>\n'))
-                  const html = (
-                    <div className="note" key={'note-' + index}>
-                      <span className="note-label">Note: </span>
-                      <span dangerouslySetInnerHTML={self.allowHTML(note)} />
-                    </div>
-                  )
-                  notesHtml.push(html)
-              }else{
+              ) {
+                let note = item.note
+                note = TextUtils.replaceUrl(note.replace(/[ ]*\n/g, '<br>\n'))
+                const html = (
+                  <div className="note" key={'note-' + index}>
+                    <span className="note-label">Note: </span>
+                    <span dangerouslySetInnerHTML={self.allowHTML(note)} />
+                  </div>
+                )
+                notesHtml.push(html)
+              } else {
                 let split = item.note.split(':')
                 if (split.length > 1) {
                   let note = item.note.replace(split[0] + ':', '')
@@ -361,7 +362,6 @@ const SegmentDeliveryModal =
                   notesHtml.push(html)
                 }
               }
-
             }
           }
         })
@@ -413,15 +413,6 @@ const SegmentDeliveryModal =
       // metadata notes
       if (this.props.metadata) {
         notesHtml.push(this.getMetadataNoteTemplate())
-      }
-
-      if (notesHtml.length === 0) {
-        let html = (
-          <div className="note" key={'note-0'}>
-            There are no notes available
-          </div>
-        )
-        notesHtml.push(html)
       }
       return notesHtml
     }
