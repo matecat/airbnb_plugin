@@ -14,6 +14,7 @@ use Engines_MMT;
 use Features;
 use Features\Airbnb\Utils\SmartCount\Pluralization;
 use Klein\Klein;
+use LQA\QA;
 use Predis\Connection\ConnectionException;
 use ReflectionException;
 use Segments_SegmentStruct;
@@ -23,7 +24,6 @@ use Matecat\SubFiltering\Filters\LtGtDoubleDecode;
 use Matecat\SubFiltering\Filters\PlaceHoldXliffTags;
 use Matecat\SubFiltering\Filters\SmartCounts;
 use Matecat\SubFiltering\Filters\Variables;
-use stdClass;
 use TaskRunner\Commons\QueueElement;
 use Users_UserStruct;
 
@@ -204,11 +204,11 @@ class Airbnb extends BaseFeature {
      * No error will be produced.
      *
      * @param     $errorType
-     * @param \QA $QA
+     * @param QA $QA
      *
      * @return int
      */
-    public function checkTagMismatch( $errorType, \QA $QA ) {
+    public function checkTagMismatch( $errorType, QA $QA ) {
 
         //check for smart count separator |||| in source segment ( base64 encoded "||||" === "fHx8fA==" )
         if ( strpos( $QA->getSourceSeg(), "equiv-text=\"base64:fHx8fA==\"" ) !== false ) {
@@ -223,12 +223,12 @@ class Airbnb extends BaseFeature {
 
             if ( ( 1 + $targetSeparatorCount ) !== $targetPluralFormsCount ) {
                 $QA->addCustomError( [
-                        'code'  => \QA::SMART_COUNT_PLURAL_MISMATCH,
+                        'code'  => QA::SMART_COUNT_PLURAL_MISMATCH,
                         'debug' => 'Smart Count rules not compliant with target language',
                         'tip'   => 'Check your language specific configuration.'
                 ] );
 
-                return \QA::SMART_COUNT_PLURAL_MISMATCH;
+                return QA::SMART_COUNT_PLURAL_MISMATCH;
             }
 
             //
@@ -321,12 +321,12 @@ class Airbnb extends BaseFeature {
 
             if ( $expectedTargetTagMap[ 0 ] != $targetTagMap[ 0 ] or $expectedTargetTagMap[ 1 ] != $targetTagMap[ 1 ] ) {
                 $QA->addCustomError( [
-                        'code'  => \QA::SMART_COUNT_MISMATCH,
+                        'code'  => QA::SMART_COUNT_MISMATCH,
                         'debug' => '%{smart_count} tag count mismatch',
                         'tip'   => 'Check the count of %{smart_count} tags in the source.'
                 ] );
 
-                return \QA::SMART_COUNT_MISMATCH;
+                return QA::SMART_COUNT_MISMATCH;
             }
 
             $QA->addCustomError( [
