@@ -14,6 +14,7 @@ use Engines_MMT;
 use Features;
 use Features\Airbnb\Utils\SmartCount\Pluralization;
 use Klein\Klein;
+use LQA\QA;
 use Predis\Connection\ConnectionException;
 use ReflectionException;
 use Segments_SegmentStruct;
@@ -204,11 +205,11 @@ class Airbnb extends BaseFeature {
      * No error will be produced.
      *
      * @param     $errorType
-     * @param \QA $QA
+     * @param QA $QA
      *
      * @return int
      */
-    public function checkTagMismatch( $errorType, \QA $QA ) {
+    public function checkTagMismatch( $errorType, QA $QA ) {
 
         //check for smart count separator |||| in source segment ( base64 encoded "||||" === "fHx8fA==" )
         if ( strpos( $QA->getSourceSeg(), "equiv-text=\"base64:fHx8fA==\"" ) !== false ) {
@@ -223,12 +224,12 @@ class Airbnb extends BaseFeature {
 
             if ( ( 1 + $targetSeparatorCount ) !== $targetPluralFormsCount ) {
                 $QA->addCustomError( [
-                        'code'  => \QA::SMART_COUNT_PLURAL_MISMATCH,
+                        'code'  => QA::SMART_COUNT_PLURAL_MISMATCH,
                         'debug' => 'Smart Count rules not compliant with target language',
                         'tip'   => 'Check your language specific configuration.'
                 ] );
 
-                return \QA::SMART_COUNT_PLURAL_MISMATCH;
+                return QA::SMART_COUNT_PLURAL_MISMATCH;
             }
 
             //
@@ -326,7 +327,7 @@ class Airbnb extends BaseFeature {
                         'tip'   => 'Check the count of %{smart_count} tags in the source.'
                 ] );
 
-                return \QA::SMART_COUNT_MISMATCH;
+                return QA::SMART_COUNT_MISMATCH;
             }
 
             $QA->addCustomError( [
