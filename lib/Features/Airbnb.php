@@ -14,6 +14,7 @@ use Engines_MMT;
 use Features;
 use Features\Airbnb\Utils\SmartCount\Pluralization;
 use Klein\Klein;
+use LQA\QA;
 use Predis\Connection\ConnectionException;
 use ReflectionException;
 use Segments_SegmentStruct;
@@ -208,7 +209,7 @@ class Airbnb extends BaseFeature {
      *
      * @return int
      */
-    public function checkTagMismatch( $errorType, \QA $QA ) {
+    public function checkTagMismatch( $errorType, QA $QA ) {
 
         //check for smart count separator |||| in source segment ( base64 encoded "||||" === "fHx8fA==" )
         if ( strpos( $QA->getSourceSeg(), "equiv-text=\"base64:fHx8fA==\"" ) !== false ) {
