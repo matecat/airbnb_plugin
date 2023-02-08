@@ -2,6 +2,12 @@ import Cookies from 'js-cookie'
 import _ from 'lodash'
 import {segmentDelivery} from './api/segmentDelivery'
 
+// Override characters counter values
+TextUtils.charactersCounterValue = {
+  cjk: 1,
+  emoji: 1,
+}
+
 const SegmentDeliveryModal =
   require('./components/modals/SegmentDeliveryModal').default
 ;(function () {
