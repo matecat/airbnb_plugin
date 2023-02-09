@@ -15,15 +15,15 @@ use Features;
 use Features\Airbnb\Utils\SmartCount\Pluralization;
 use Klein\Klein;
 use LQA\QA;
-use Predis\Connection\ConnectionException;
-use ReflectionException;
-use Segments_SegmentStruct;
 use Matecat\SubFiltering\Commons\Pipeline;
 use Matecat\SubFiltering\Filters\HtmlToPh;
 use Matecat\SubFiltering\Filters\LtGtDoubleDecode;
 use Matecat\SubFiltering\Filters\PlaceHoldXliffTags;
 use Matecat\SubFiltering\Filters\SmartCounts;
 use Matecat\SubFiltering\Filters\Variables;
+use Predis\Connection\ConnectionException;
+use ReflectionException;
+use Segments_SegmentStruct;
 use TaskRunner\Commons\QueueElement;
 use Users_UserStruct;
 
@@ -204,7 +204,7 @@ class Airbnb extends BaseFeature {
      * No error will be produced.
      *
      * @param     $errorType
-     * @param QA $QA
+     * @param QA  $QA
      *
      * @return int
      */
@@ -346,6 +346,19 @@ class Airbnb extends BaseFeature {
         }
 
         return $config;
+    }
+
+    /**
+     * Count CJK and emoji as 1 character, so mb_strlen is enough. ( baseLength )
+     *
+     * @return array
+     * @var $counts array
+     */
+    public function characterLengthCount( $counts ) {
+        $counts[ "cjkMatches" ] = 0;
+        $counts[ "emojiMatches" ] = 0;
+
+        return $counts;
     }
 
 }
