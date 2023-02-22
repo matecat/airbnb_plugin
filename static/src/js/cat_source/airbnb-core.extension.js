@@ -2,8 +2,10 @@ import Cookies from 'js-cookie'
 import _ from 'lodash'
 import {segmentDelivery} from './api/segmentDelivery'
 
-// Override get characters size
-TextUtils.getCharsSize = (value) => value.length;
+// Override get characters size (CJK and Emoji)
+TextUtils.getCharsSize = (value) => value.length * 1;
+TextUtils.getCJKCharsSize = (value) => TextUtils.getCharsSize(value);
+TextUtils.getEmojiCharsSize = (value) => TextUtils.getCharsSize(value);
 
 const SegmentDeliveryModal =
   require('./components/modals/SegmentDeliveryModal').default
