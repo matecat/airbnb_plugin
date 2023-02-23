@@ -351,14 +351,17 @@ class Airbnb extends BaseFeature {
     /**
      * Count CJK and emoji as 1 character, so mb_strlen is enough. ( baseLength )
      *
+     * @param $string
      * @return array
-     * @var $counts array
      */
-    public function characterLengthCount( $counts ) {
-        $counts[ "cjkMatches" ] = 0;
-        $counts[ "emojiMatches" ] = 0;
+    public function characterLengthCount( $string ) {
 
-        return $counts;
+        return [
+            "baseLength"   => mb_strlen( $string ),
+            "cjkMatches"   => 0,
+            "emojiMatches" => 0,
+        ];
+
     }
 
 }
