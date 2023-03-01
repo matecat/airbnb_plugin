@@ -212,12 +212,17 @@ class Airbnb extends BaseFeature {
         // if $targetSplittedByPipeSepCount !== $targetPluralFormsCount an error will be thrown
         // by the checkTagMismatch() function, so we don't care about it
         if($targetSplittedByPipeSepCount === $targetPluralFormsCount){
-            $QA->performTagPositionCheck($sourceSplittedByPipeSep[0], $targetSplittedByPipeSep[0]);
+
+            // perform strict checks only with language with 2 plural forms
+            $performIdCheck = $targetPluralFormsCount === 2;
+            $performTagPositionsCheck = $targetPluralFormsCount === 2;
+
+            $QA->performTagPositionCheck($sourceSplittedByPipeSep[0], $targetSplittedByPipeSep[0], $performIdCheck, $performTagPositionsCheck);
 
             unset($targetSplittedByPipeSep[0]);
 
             foreach ($targetSplittedByPipeSep as $targetSplitted){
-                $QA->performTagPositionCheck($sourceSplittedByPipeSep[1], $targetSplitted);
+                $QA->performTagPositionCheck($sourceSplittedByPipeSep[1], $targetSplitted, $performIdCheck, $performTagPositionsCheck);
             }
         }
 
