@@ -182,6 +182,54 @@ class Airbnb extends BaseFeature {
     }
 
     /**
+     * Check tag positions
+     * -------------------------------------------------
+     * NOTE 28/02/2023
+     * -------------------------------------------------
+     * This function returns a boolean to be used in the main QA class,
+     * indicating that _checkTagPositions() function should continue or not
+     *
+     * @param $errorType
+     * @param QA $QA
+     *
+     * @return bool
+     */
+    public function checkTagPositions($errorType, QA $QA)
+    {
+        $sourceSplittedByPipeSep = preg_split( '/<ph id="mtc_[0-9]{0,10}" equiv-text="base64:fHx8fA=="\/>/', $QA->getSourceSeg() );
+        $sourceSplittedByPipeSepCount = count($sourceSplittedByPipeSep);
+
+        // No smart count pipes, continue with _checkTagPositions()
+        if($sourceSplittedByPipeSepCount === 1){
+            return false;
+        }
+
+        // Smart count check tag position
+        $targetSplittedByPipeSep = preg_split( '/<ph id="mtc_[0-9]{0,10}" equiv-text="base64:fHx8fA=="\/>/', $QA->getTargetSeg() );
+        $targetSplittedByPipeSepCount = count($targetSplittedByPipeSep);
+        $targetPluralFormsCount = Pluralization::getCountFromLang( $QA->getTargetSegLang() );
+
+        // if $targetSplittedByPipeSepCount !== $targetPluralFormsCount an error will be thrown
+        // by the checkTagMismatch() function, so we don't care about it
+        if($targetSplittedByPipeSepCount === $targetPluralFormsCount){
+
+            // perform strict checks only with language with 2 plural forms
+            $performIdCheck = $targetPluralFormsCount === 2;
+            $performTagPositionsCheck = $targetPluralFormsCount === 2;
+
+            $QA->performTagPositionCheck($sourceSplittedByPipeSep[0], $targetSplittedByPipeSep[0], $performIdCheck, $performTagPositionsCheck);
+
+            unset($targetSplittedByPipeSep[0]);
+
+            foreach ($targetSplittedByPipeSep as $targetSplitted){
+                $QA->performTagPositionCheck($sourceSplittedByPipeSep[1], $targetSplitted, $performIdCheck, $performTagPositionsCheck);
+            }
+        }
+
+        return true;
+    }
+
+    /**
      * Check tag mismatch / smartcount consistency
      * -------------------------------------------------
      * NOTE 09/01/2020
@@ -319,14 +367,16 @@ class Airbnb extends BaseFeature {
             sort( $targetTagMap[ 0 ] );
             sort( $targetTagMap[ 1 ] );
 
-            if ( $expectedTargetTagMap[ 0 ] != $targetTagMap[ 0 ] or $expectedTargetTagMap[ 1 ] != $targetTagMap[ 1 ] ) {
-                $QA->addCustomError( [
+            foreach ($expectedTargetTagMap as $index => $expectedTargetTags){
+                if($expectedTargetTags != $targetTagMap[$index]){
+                    $QA->addCustomError( [
                         'code'  => QA::SMART_COUNT_MISMATCH,
                         'debug' => '%{smart_count} tag count mismatch',
                         'tip'   => 'Check the count of %{smart_count} tags in the source.'
-                ] );
+                    ] );
 
-                return QA::SMART_COUNT_MISMATCH;
+                    return QA::SMART_COUNT_MISMATCH;
+                }
             }
 
             $QA->addCustomError( [
