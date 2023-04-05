@@ -3,9 +3,9 @@ import _ from 'lodash'
 import {segmentDelivery} from './api/segmentDelivery'
 
 // Override characters size mapping
-TextUtils.charsSizeMapping =  [
-  {default: (value) => TextUtils.getDefaultCharsSize(value)},
-]
+TextUtils.charsSizeMapping = {
+  default: (value) => TextUtils.getDefaultCharsSize(value),
+}
 
 const SegmentDeliveryModal =
   require('./components/modals/SegmentDeliveryModal').default
