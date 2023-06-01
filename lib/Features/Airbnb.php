@@ -196,7 +196,7 @@ class Airbnb extends BaseFeature {
      */
     public function checkTagPositions($errorType, QA $QA)
     {
-        $sourceSplittedByPipeSep = preg_split( '/<ph id="mtc_[0-9]{0,10}" equiv-text="base64:fHx8fA=="\/>/', $QA->getSourceSeg() );
+        $sourceSplittedByPipeSep = preg_split( '/<ph id="mtc_[0-9]{0,10}" ctype="x-smart-count" equiv-text="base64:fHx8fA=="\/>/', $QA->getSourceSeg() );
         $sourceSplittedByPipeSepCount = count($sourceSplittedByPipeSep);
 
         // No smart count pipes, continue with _checkTagPositions()
@@ -205,7 +205,7 @@ class Airbnb extends BaseFeature {
         }
 
         // Smart count check tag position
-        $targetSplittedByPipeSep = preg_split( '/<ph id="mtc_[0-9]{0,10}" equiv-text="base64:fHx8fA=="\/>/', $QA->getTargetSeg() );
+        $targetSplittedByPipeSep = preg_split( '/<ph id="mtc_[0-9]{0,10}" ctype="x-smart-count" equiv-text="base64:fHx8fA=="\/>/', $QA->getTargetSeg() );
         $targetSplittedByPipeSepCount = count($targetSplittedByPipeSep);
         $targetPluralFormsCount = Pluralization::getCountFromLang( $QA->getTargetSegLang() );
 
@@ -339,7 +339,7 @@ class Airbnb extends BaseFeature {
             // Finally, the target tag map is compared to $expectedTargetTagMap
             //
             $sourceTagMap            = [];
-            $sourceSplittedByPipeSep = preg_split( '/<ph id="mtc_[0-9]{0,10}" equiv-text="base64:fHx8fA=="\/>/', $QA->getSourceSeg() );
+            $sourceSplittedByPipeSep = preg_split( '/<ph id="mtc_[0-9]{0,10}" ctype="x-smart-count" equiv-text="base64:fHx8fA=="\/>/', $QA->getSourceSeg() );
 
             foreach ( $sourceSplittedByPipeSep as $item ) {
                 preg_match_all( '/equiv-text="base64:[a-zA-Z0-9=]{1,}/', $item, $itemSegMatch );
@@ -354,7 +354,7 @@ class Airbnb extends BaseFeature {
             }
 
             $targetTagMap            = [];
-            $targetSplittedByPipeSep = preg_split( '/<ph id="mtc_[0-9]{0,10}" equiv-text="base64:fHx8fA=="\/>/', $QA->getTargetSeg() );
+            $targetSplittedByPipeSep = preg_split( '/<ph id="mtc_[0-9]{0,10}" ctype="x-smart-count" equiv-text="base64:fHx8fA=="\/>/', $QA->getTargetSeg() );
 
             foreach ( $targetSplittedByPipeSep as $item ) {
                 //preg_match_all( '/<ph id ?= ?[\'"]mtc_[0-9]{1,9}?[\'"] equiv-text="base64:[a-zA-Z0-9=]{1,}"\/>/', $item, $itemSegMatch );
