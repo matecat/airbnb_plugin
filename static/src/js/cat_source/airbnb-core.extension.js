@@ -83,56 +83,6 @@ TextUtils.charsSizeMapping = {
       }
       return UI.getSegmentId(segmentAfter)
     },
-    createButtons: function () {
-      if (deliveryObj.showDelivery) {
-        var button_label = config.status_labels.TRANSLATED
-        var deliver, currentButton
-
-        var disabled = this.currentSegment.hasClass('loaded')
-          ? ''
-          : ' disabled="disabled"'
-
-        const deliveryDisabled =
-          sessionStorage.getItem('segToDeliver' + this.currentSegmentId) === '1'
-            ? ''
-            : 'disabled'
-
-        deliver =
-          '<li><a draggable="false" id="segment-' +
-          this.currentSegmentId +
-          '-button-deliver" data-segmentid="' +
-          this.currentSegmentId +
-          '"' +
-          ' href="#" class="deliver ' +
-          deliveryDisabled +
-          '">DELIVER</a></li>'
-        currentButton =
-          '<li><a draggable="false" id="segment-' +
-          this.currentSegmentId +
-          '-button-translated" data-segmentid="segment-' +
-          this.currentSegmentId +
-          '" href="#" class="translated"' +
-          disabled +
-          ' >' +
-          button_label +
-          '</a><p>' +
-          (UI.isMac ? 'CMD' : 'CTRL') +
-          '+ENTER</p></li>'
-
-        UI.segmentButtons = currentButton + deliver
-
-        var buttonsOb = $('#segment-' + this.currentSegmentId + '-buttons')
-
-        UI.currentSegment.trigger('buttonsCreation')
-
-        buttonsOb.empty().append(UI.segmentButtons)
-        buttonsOb.before('<p class="warnings"></p>')
-
-        UI.segmentButtons = null
-      } else {
-        originalCreateButtons.apply(this, arguments)
-      }
-    },
 
   })
   function overrideTabMessages(SegmentTabMessages) {
