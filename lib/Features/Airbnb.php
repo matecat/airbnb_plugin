@@ -12,6 +12,7 @@ use API\V2\Json\ProjectUrls;
 use Engines_AbstractEngine;
 use Engines_MMT;
 use Features;
+use Features\Airbnb\Model\Analysis\CustomPayableRates;
 use Features\Airbnb\Utils\SmartCount\Pluralization;
 use Klein\Klein;
 use LQA\QA;
@@ -364,4 +365,14 @@ class Airbnb extends BaseFeature {
 
     }
 
+    /**
+     * @param $payableRates
+     * @param $SourceLang
+     * @param $TargetLang
+     *
+     * @return array
+     */
+    public function filterPayableRates( $payableRates, $SourceLang, $TargetLang ) {
+        return CustomPayableRates::getPayableRates( $SourceLang, $TargetLang );
+    }
 }
