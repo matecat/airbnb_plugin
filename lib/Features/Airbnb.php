@@ -370,8 +370,10 @@ class Airbnb extends BaseFeature {
 
             foreach ($expectedTargetTagMap as $index => $expectedTargetTags){
 
-                $check = array_diff($targetTagMap[$index], $expectedTargetTags);
-                $check2 = array_diff($expectedTargetTags, $targetTagMap[$index]);
+                $currentTargetTagMap = $targetTagMap[$index];
+
+                $check = array_diff($currentTargetTagMap, $expectedTargetTags);
+                $check2 = array_diff($expectedTargetTags, $currentTargetTagMap);
 
                 if(!empty($check) or !empty($check2)){
                     $QA->addCustomError( [
@@ -381,6 +383,12 @@ class Airbnb extends BaseFeature {
                     ] );
 
                     return QA::SMART_COUNT_MISMATCH;
+                }
+
+                if($currentTargetTagMap !== $expectedTargetTags){
+                    $QA->addError( QA::ERR_TAG_ORDER );
+
+                    return QA::ERR_TAG_ORDER;
                 }
             }
 
