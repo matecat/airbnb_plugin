@@ -138,6 +138,7 @@ class Airbnb extends BaseFeature {
         }
 
         if ( strpos( $postInput[ 'context_before' ], 'phrase_key|¶|' ) !== false ) {
+            // old school ( backward compatibility )
             $segmentsList->id_before->segment = md5( str_replace( 'phrase_key|¶|', '', $postInput[ 'context_before' ] ) . $segmentsList->id_segment->segment );
         } else {
             $segmentsList->id_before->segment = md5( str_replace( 'translation_context|¶|', '', $postInput[ 'context_before' ] ) . $segmentsList->id_segment->segment );
