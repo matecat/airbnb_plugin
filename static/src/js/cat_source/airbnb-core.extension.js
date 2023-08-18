@@ -1,24 +1,24 @@
-import Cookies from 'js-cookie'
-import _ from 'lodash'
+import {isUndefined, forOwn} from 'lodash'
+import TextUtils from '../../../../../../public/js/cat_source/es6/utils/textUtils'
+import SegmentActions from '../../../../../../public/js/cat_source/es6/actions/SegmentActions'
+import SegmentStore from '../../../../../../public/js/cat_source/es6/stores/SegmentStore'
+import SegmentFooterTabMessages from '../../../../../../public/js/cat_source/es6/components/segments/SegmentFooterTabMessages'
+import SegmentFooter from '../../../../../../public/js/cat_source/es6/components/segments/SegmentFooter'
+import SegmentUtils from '../../../../../../public/js/cat_source/es6/utils/segmentUtils'
 
 // Override characters size mapping
 TextUtils.charsSizeMapping = {
   default: (value) => TextUtils.getDefaultCharsSize(value),
 }
-
 ;(function () {
-
-  var originalRegisterFooterTabs = UI.registerFooterTabs
-  var originalgoToNextSegment = UI.gotoNextSegment
-  var originalInputEditAreaEventHandler = UI.inputEditAreaEventHandler
-
   SegmentActions.addGlossaryItem = function () {
     return false
   }
   $.extend(UI, {
+    originalRegisterFooterTabs: UI.registerFooterTabs,
 
     registerFooterTabs: function () {
-      originalRegisterFooterTabs.apply(this)
+      this.originalRegisterFooterTabs.apply(this)
       SegmentActions.registerTab('messages', true, true)
     },
     getContextBefore: function (segmentId) {
@@ -59,7 +59,7 @@ TextUtils.charsSizeMapping = {
         }
       })(segment)
       // var segmentBefore = findSegmentBefore();
-      if (_.isUndefined(segmentBefore)) {
+      if (isUndefined(segmentBefore)) {
         return null
       }
       var segmentBeforeId = UI.getSegmentId(segmentBefore)
@@ -78,12 +78,11 @@ TextUtils.charsSizeMapping = {
           return findAfter(after)
         }
       })(segment)
-      if (_.isUndefined(segmentAfter)) {
+      if (isUndefined(segmentAfter)) {
         return null
       }
       return UI.getSegmentId(segmentAfter)
     },
-
   })
   function overrideTabMessages(SegmentTabMessages) {
     SegmentTabMessages.prototype.getNotes = function () {
@@ -132,7 +131,7 @@ TextUtils.charsSizeMapping = {
         let targetPrefix = config.target_rfc.split('-')[0]
         let langLike
         //Search the dialect
-        _.forOwn(PLURAL_TYPE_NAME_TO_LANGUAGES, function (value, key) {
+        forOwn(PLURAL_TYPE_NAME_TO_LANGUAGES, function (value, key) {
           if (value.indexOf(config.target_rfc) !== -1) {
             langLike = key
             return false
@@ -140,14 +139,14 @@ TextUtils.charsSizeMapping = {
         })
         // In not search de prefix
         if (!langLike) {
-          _.forOwn(PLURAL_TYPE_NAME_TO_LANGUAGES, function (value, key) {
+          forOwn(PLURAL_TYPE_NAME_TO_LANGUAGES, function (value, key) {
             if (value.indexOf(targetPrefix) !== -1) {
               langLike = key
               return false
             }
           })
         }
-        if (!_.isUndefined(langLike) && PLURAL_TYPES[langLike]) {
+        if (!isUndefined(langLike) && PLURAL_TYPES[langLike]) {
           let rules = PLURAL_TYPES[langLike]
           let html = (
             <div className="note" key="forms">
@@ -445,7 +444,7 @@ TextUtils.charsSizeMapping = {
     }
   }
 
-  overrideTabMessages(SegmentTabMessages)
+  overrideTabMessages(SegmentFooterTabMessages)
   overrideSetDefaultTabOpen(SegmentFooter)
   ovverrideSegmentUtilFn(SegmentUtils)
 

@@ -27,6 +27,10 @@ use ReflectionException;
 use Segments_SegmentStruct;
 use TaskRunner\Commons\QueueElement;
 use Users_UserStruct;
+use ViewController;
+use PHPTALWithAppend;
+use Features\Airbnb\Utils\Routes;
+
 
 class Airbnb extends BaseFeature {
 
@@ -45,6 +49,18 @@ class Airbnb extends BaseFeature {
         route( '/job/[:id_job]/[:password]/segment_delivery/[:id_segment]/session', 'POST', 'Features\Airbnb\Controller\SegmentDeliveryController', 'auth' );
         route( '/job/[:id_job]/[:password]/segment_delivery/[:id_segment]/session', 'GET', 'Features\Airbnb\Controller\SegmentDeliveryController', 'startSession' );
         route( '/job/[:id_job]/[:password]/segment_delivery', 'POST', 'Features\Airbnb\Controller\SegmentDeliveryController', 'send' );
+    }
+
+    public function appendDecorators( viewController $controller, PHPTALWithAppend $template ) {
+        $files = $this->getBuildFiles();
+        foreach ($files as $file) {
+            $path_parts = pathinfo($file);
+            if ($path_parts['extension'] === 'css') {
+                $template->append( 'css_resources', Routes::staticBuild( $file ) );
+            } else if ($path_parts['extension'] === 'js'){
+                $template->append( 'footer_js', Routes::staticBuild( $file ) );
+            }
+        }
     }
 
     /**
