@@ -9,7 +9,6 @@
   "author": "MateCat Team",
   "license": "LGPL",
   "dependencies": {
-    "lodash": "^4.17.21"
   },
   "devDependencies": {}
 }
