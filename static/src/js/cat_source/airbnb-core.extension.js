@@ -4,6 +4,10 @@ import _ from 'lodash'
 // Override characters size mapping
 TextUtils.charsSizeMapping = {
   default: (value) => TextUtils.getDefaultCharsSize(value),
+  custom: [
+    (value) => TextUtils.getCJKMatches(value, TextUtils.getUft16CharsSize),
+    (value) => TextUtils.getFullwidthVariantsMatches(value, TextUtils.getUft16CharsSize)
+  ],
 }
 
 ;(function () {
