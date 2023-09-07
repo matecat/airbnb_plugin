@@ -20,6 +20,7 @@ module.exports = ({env}, {mode}) => {
         ? '[name].[fullhash].chunk.js'
         : '[name].[contenthash].chunk.js',
       publicPath: '/',
+      clean: true,
     },
     optimization: {
       moduleIds: 'deterministic',

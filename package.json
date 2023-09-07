@@ -4,11 +4,17 @@
   "description": "",
   "main": "Gruntfile.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build-dev": "webpack --mode development",
+    "build-prod": "webpack --mode production"
   },
   "author": "MateCat Team",
   "license": "LGPL",
   "dependencies": {
   },
-  "devDependencies": {}
+  "devDependencies": {
+    "webpack": "5.88.2",
+    "webpack-cli": "5.1.4",
+    "webpack-concat-files-plugin": "^0.5.2"
+  }
 }
