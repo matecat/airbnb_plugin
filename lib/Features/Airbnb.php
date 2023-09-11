@@ -51,18 +51,6 @@ class Airbnb extends BaseFeature {
         route( '/job/[:id_job]/[:password]/segment_delivery', 'POST', 'Features\Airbnb\Controller\SegmentDeliveryController', 'send' );
     }
 
-    public function appendDecorators( viewController $controller, PHPTALWithAppend $template ) {
-//        $files = $this->getBuildFiles();
-//        foreach ($files as $file) {
-//            $path_parts = pathinfo($file);
-//            if ($path_parts['extension'] === 'css') {
-//                $template->append( 'css_resources', Routes::staticBuild( $file ) );
-//            } else if ($path_parts['extension'] === 'js'){
-//                $template->append( 'footer_js', Routes::staticBuild( $file ) );
-//            }
-//        }
-    }
-
     /**
      * @param $_segment_metadata array
      * @param $projectStructure
