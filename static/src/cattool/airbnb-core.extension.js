@@ -1,16 +1,18 @@
 import React from 'react'
 import {isUndefined, forOwn} from 'lodash'
-import TextUtils from '../../../../../../public/js/cat_source/es6/utils/textUtils'
-import SegmentActions from '../../../../../../public/js/cat_source/es6/actions/SegmentActions'
-import SegmentStore from '../../../../../../public/js/cat_source/es6/stores/SegmentStore'
-import SegmentFooterTabMessages from '../../../../../../public/js/cat_source/es6/components/segments/SegmentFooterTabMessages'
-import SegmentFooter from '../../../../../../public/js/cat_source/es6/components/segments/SegmentFooter'
-import SegmentUtils from '../../../../../../public/js/cat_source/es6/utils/segmentUtils'
+import TextUtils from '../../../../../public/js/cat_source/es6/utils/textUtils'
+import SegmentActions from '../../../../../public/js/cat_source/es6/actions/SegmentActions'
+import SegmentStore from '../../../../../public/js/cat_source/es6/stores/SegmentStore'
+import SegmentFooterTabMessages from '../../../../../public/js/cat_source/es6/components/segments/SegmentFooterTabMessages'
+import SegmentFooter from '../../../../../public/js/cat_source/es6/components/segments/SegmentFooter'
+import SegmentUtils from '../../../../../public/js/cat_source/es6/utils/segmentUtils'
 // Override characters size mapping
 
 const AIRBNB_FEATURE = 'airbnb'
 
 const init = () => {
+  import('./airbnb-core.scss')
+
   TextUtils.charsSizeMapping = {
     default: (value) => TextUtils.getDefaultCharsSize(value),
   }
