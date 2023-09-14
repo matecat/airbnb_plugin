@@ -167,6 +167,7 @@ class Airbnb extends BaseFeature {
      *
      * @throws ConnectionException
      * @throws ReflectionException
+     * @throws \Exceptions\ValidationError
      */
     public function validateProjectCreation( $projectStructure ) {
         //override Revise Improved qa Model
@@ -175,7 +176,6 @@ class Airbnb extends BaseFeature {
     }
 
     public function fromLayer0ToLayer1( Pipeline $channel ) {
-        $channel->addAfter( new HtmlToPh(), new Variables() );
         $channel->addAfter( new Variables(), new SmartCounts() );
 
         return $channel;
