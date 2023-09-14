@@ -183,6 +183,19 @@ class CustomPayableRates extends \Analysis_PayableRates {
                 'ICE'         => 0,
                 'MT'          => 80
             ],
+            "zh-HK" => [
+                'NO_MATCH'    => 100,
+                '50%-74%'     => 100,
+                '75%-84%'     => 60,
+                '85%-94%'     => 60,
+                '95%-99%'     => 60,
+                '100%'        => 30,
+                '100%_PUBLIC' => 30,
+                'REPETITIONS' => 30,
+                'INTERNAL'    => 60,
+                'ICE'         => 0,
+                'MT'          => 90
+            ],
             "ar" => [
                 'NO_MATCH'    => 100,
                 '50%-74%'     => 100,
