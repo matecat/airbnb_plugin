@@ -1,94 +1,101 @@
-import Cookies from 'js-cookie'
-import _ from 'lodash'
-
+import React from 'react'
+import {isUndefined, forOwn} from 'lodash'
+import TextUtils from '../../../../../public/js/cat_source/es6/utils/textUtils'
+import SegmentActions from '../../../../../public/js/cat_source/es6/actions/SegmentActions'
+import SegmentStore from '../../../../../public/js/cat_source/es6/stores/SegmentStore'
+import SegmentFooterTabMessages from '../../../../../public/js/cat_source/es6/components/segments/SegmentFooterTabMessages'
+import SegmentFooter from '../../../../../public/js/cat_source/es6/components/segments/SegmentFooter'
+import SegmentUtils from '../../../../../public/js/cat_source/es6/utils/segmentUtils'
 // Override characters size mapping
-TextUtils.charsSizeMapping = {
-  default: (value) => TextUtils.getDefaultCharsSize(value),
-  custom: [
-    (value) => TextUtils.getCJKMatches(value, TextUtils.getUft16CharsSize),
-    (value) => TextUtils.getFullwidthVariantsMatches(value, TextUtils.getUft16CharsSize)
-  ],
-}
 
-;(function () {
+const AIRBNB_FEATURE = 'airbnb'
 
-  var originalRegisterFooterTabs = UI.registerFooterTabs
-  var originalgoToNextSegment = UI.gotoNextSegment
-  var originalInputEditAreaEventHandler = UI.inputEditAreaEventHandler
+const init = () => {
+  import('./airbnb-core.scss')
 
+  TextUtils.charsSizeMapping = {
+    default: (value) => TextUtils.getDefaultCharsSize(value),
+    custom: [
+      (value) => TextUtils.getCJKMatches(value, TextUtils.getUft16CharsSize),
+      (value) => TextUtils.getFullwidthVariantsMatches(value, TextUtils.getUft16CharsSize)
+    ],
+  }
   SegmentActions.addGlossaryItem = function () {
     return false
   }
-  $.extend(UI, {
+  if (typeof UI !== 'undefined') {
+    $.extend(UI, {
+      originalRegisterFooterTabs: UI.registerFooterTabs,
 
-    registerFooterTabs: function () {
-      originalRegisterFooterTabs.apply(this)
-      SegmentActions.registerTab('messages', true, true)
-    },
-    getContextBefore: function (segmentId) {
-      let segmentObj
-      let phraseKeyNote
-      try {
-        segmentObj = SegmentStore.getSegmentByIdToJS(segmentId)
-        phraseKeyNote = segmentObj.notes.find((item) => {
-          return (
-            item.note.indexOf('phrase_key|¶|') >= 0 ||
-            item.note.indexOf('translation_context|¶|') >= 0
-          )
-        })
-      } catch (e) {
-        return null
-      }
-
-      if (phraseKeyNote) {
-        return phraseKeyNote.note
-      } else {
-        return null
-      }
-    },
-    getContextAfter: function (segmentId) {
-      return ''
-    },
-    getIdBefore: function (segmentId) {
-      var segment = $('#segment-' + segmentId)
-      var originalId = segment.attr('data-split-original-id')
-      var segmentBefore = (function findBefore(segment) {
-        var before = segment.prev()
-        if (before.length === 0) {
-          return undefined
-        } else if (before.attr('data-split-original-id') !== originalId) {
-          return before
-        } else {
-          return findBefore(before)
+      registerFooterTabs: function () {
+        this.originalRegisterFooterTabs.apply(this)
+        SegmentActions.registerTab('messages', true, true)
+      },
+      getContextBefore: function (segmentId) {
+        let segmentObj
+        let phraseKeyNote
+        try {
+          segmentObj = SegmentStore.getSegmentByIdToJS(segmentId)
+          phraseKeyNote = segmentObj.notes.find((item) => {
+            return (
+              item.note.indexOf('phrase_key|¶|') >= 0 ||
+              item.note.indexOf('translation_context|¶|') >= 0
+            )
+          })
+        } catch (e) {
+          return null
         }
-      })(segment)
-      // var segmentBefore = findSegmentBefore();
-      if (_.isUndefined(segmentBefore)) {
-        return null
-      }
-      var segmentBeforeId = UI.getSegmentId(segmentBefore)
-      return segmentBeforeId
-    },
-    getIdAfter: function (segmentId) {
-      var segment = $('#segment-' + segmentId)
-      var originalId = segment.attr('data-split-original-id')
-      var segmentAfter = (function findAfter(segment) {
-        var after = segment.next()
-        if (after.length === 0) {
-          return undefined
-        } else if (after.attr('data-split-original-id') !== originalId) {
-          return after
-        } else {
-          return findAfter(after)
-        }
-      })(segment)
-      if (_.isUndefined(segmentAfter)) {
-        return null
-      }
-      return UI.getSegmentId(segmentAfter)
-    },
 
-  })
+        if (phraseKeyNote) {
+          return phraseKeyNote.note
+        } else {
+          return null
+        }
+      },
+      getContextAfter: function (segmentId) {
+        return ''
+      },
+      getIdBefore: function (segmentId) {
+        var segment = $('#segment-' + segmentId)
+        var originalId = segment.attr('data-split-original-id')
+        var segmentBefore = (function findBefore(segment) {
+          var before = segment.prev()
+          if (before.length === 0) {
+            return undefined
+          } else if (before.attr('data-split-original-id') !== originalId) {
+            return before
+          } else {
+            return findBefore(before)
+          }
+        })(segment)
+        // var segmentBefore = findSegmentBefore();
+        if (isUndefined(segmentBefore)) {
+          return null
+        }
+        var segmentBeforeId = UI.getSegmentId(segmentBefore)
+        return segmentBeforeId
+      },
+      getIdAfter: function (segmentId) {
+        var segment = $('#segment-' + segmentId)
+        var originalId = segment.attr('data-split-original-id')
+        var segmentAfter = (function findAfter(segment) {
+          var after = segment.next()
+          if (after.length === 0) {
+            return undefined
+          } else if (after.attr('data-split-original-id') !== originalId) {
+            return after
+          } else {
+            return findAfter(after)
+          }
+        })(segment)
+        if (isUndefined(segmentAfter)) {
+          return null
+        }
+        return UI.getSegmentId(segmentAfter)
+      },
+    })
+  }
+
   function overrideTabMessages(SegmentTabMessages) {
     SegmentTabMessages.prototype.getNotes = function () {
       let notesHtml = []
@@ -136,7 +143,7 @@ TextUtils.charsSizeMapping = {
         let targetPrefix = config.target_rfc.split('-')[0]
         let langLike
         //Search the dialect
-        _.forOwn(PLURAL_TYPE_NAME_TO_LANGUAGES, function (value, key) {
+        forOwn(PLURAL_TYPE_NAME_TO_LANGUAGES, function (value, key) {
           if (value.indexOf(config.target_rfc) !== -1) {
             langLike = key
             return false
@@ -144,14 +151,14 @@ TextUtils.charsSizeMapping = {
         })
         // In not search de prefix
         if (!langLike) {
-          _.forOwn(PLURAL_TYPE_NAME_TO_LANGUAGES, function (value, key) {
+          forOwn(PLURAL_TYPE_NAME_TO_LANGUAGES, function (value, key) {
             if (value.indexOf(targetPrefix) !== -1) {
               langLike = key
               return false
             }
           })
         }
-        if (!_.isUndefined(langLike) && PLURAL_TYPES[langLike]) {
+        if (!isUndefined(langLike) && PLURAL_TYPES[langLike]) {
           let rules = PLURAL_TYPES[langLike]
           let html = (
             <div className="note" key="forms">
@@ -449,10 +456,10 @@ TextUtils.charsSizeMapping = {
     }
   }
 
-  overrideTabMessages(SegmentTabMessages)
+  overrideTabMessages(SegmentFooterTabMessages)
   overrideSetDefaultTabOpen(SegmentFooter)
   ovverrideSegmentUtilFn(SegmentUtils)
-
-  //Delete MT matches for japanese target and en-Us source
-  //overrideGetContributionsSuccess(SegmentActions);
-})()
+}
+document.addEventListener('DOMContentLoaded', function (event) {
+  if (config.project_plugins.indexOf(AIRBNB_FEATURE) > -1) init()
+})

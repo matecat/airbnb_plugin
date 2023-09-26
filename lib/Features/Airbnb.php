@@ -27,6 +27,10 @@ use ReflectionException;
 use Segments_SegmentStruct;
 use TaskRunner\Commons\QueueElement;
 use Users_UserStruct;
+use ViewController;
+use PHPTALWithAppend;
+use Features\Airbnb\Utils\Routes;
+
 
 class Airbnb extends BaseFeature {
 

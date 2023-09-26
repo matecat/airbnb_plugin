@@ -18,9 +18,8 @@ class CatDecorator extends AbstractCatDecorator {
 
     public function decorate() {
         $this->_checkSessionCookie();
-
-        $this->template->append( 'footer_js', Routes::staticBuild( '/airbnb-core-build.js' ) );
-        $this->template->append( 'css_resources', Routes::staticBuild( '/airbnb-build.css' ) );
+//        $this->template->append( 'footer_js', Routes::staticBuild( '/airbnb.28ad8166d78e0986cf33.js' ) );
+//        $this->template->append( 'css_resources', Routes::staticBuild( '/runtime.28ad8166d78e0986cf33.js' ) );
 
         $this->assignCatDecorator();
     }
