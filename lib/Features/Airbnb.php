@@ -12,12 +12,10 @@ use API\V2\Json\ProjectUrls;
 use Engines_AbstractEngine;
 use Engines_MMT;
 use Features;
-use Features\Airbnb\Model\Analysis\CustomPayableRates;
 use Features\Airbnb\Utils\SmartCount\Pluralization;
 use Klein\Klein;
 use LQA\QA;
 use Matecat\SubFiltering\Commons\Pipeline;
-use Matecat\SubFiltering\Filters\HtmlToPh;
 use Matecat\SubFiltering\Filters\LtGtDoubleDecode;
 use Matecat\SubFiltering\Filters\PlaceHoldXliffTags;
 use Matecat\SubFiltering\Filters\SmartCounts;
@@ -27,9 +25,6 @@ use ReflectionException;
 use Segments_SegmentStruct;
 use TaskRunner\Commons\QueueElement;
 use Users_UserStruct;
-use ViewController;
-use PHPTALWithAppend;
-use Features\Airbnb\Utils\Routes;
 
 
 class Airbnb extends BaseFeature {
@@ -432,14 +427,4 @@ class Airbnb extends BaseFeature {
 
     }
 
-    /**
-     * @param $payableRates
-     * @param $SourceLang
-     * @param $TargetLang
-     *
-     * @return array
-     */
-    public function filterPayableRates( $payableRates, $SourceLang, $TargetLang ) {
-        return CustomPayableRates::getPayableRates( $SourceLang, $TargetLang );
-    }
 }
