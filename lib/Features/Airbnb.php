@@ -176,12 +176,6 @@ class Airbnb extends BaseFeature {
         return $channel;
     }
 
-    public function fromRawXliffToLayer0( Pipeline $channel ) {
-        $channel->addAfter( new PlaceHoldXliffTags(), new LtGtDoubleDecode() ); // Fix source &amp;lt;&gt; // Hope and Pray
-
-        return $channel;
-    }
-
     /**
      * Check tag positions
      * -------------------------------------------------
