@@ -52,6 +52,7 @@ class Pluralization
             case "mk-MK":
             case "nb-NO":
             case "nl-NL":
+            case "nl-BE":
             case "nn-NO":
             case "pt-BR":
             case "pt-PT":
