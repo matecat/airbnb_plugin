@@ -9,15 +9,16 @@
 namespace Features;
 
 use API\V2\Json\ProjectUrls;
+use ArrayObject;
 use Engines_AbstractEngine;
 use Engines_MMT;
+use Exception;
+use Exceptions\ValidationError;
 use Features;
 use Features\Airbnb\Utils\SmartCount\Pluralization;
 use Klein\Klein;
 use LQA\QA;
 use Matecat\SubFiltering\Commons\Pipeline;
-use Matecat\SubFiltering\Filters\LtGtDoubleDecode;
-use Matecat\SubFiltering\Filters\PlaceHoldXliffTags;
 use Matecat\SubFiltering\Filters\SmartCounts;
 use Matecat\SubFiltering\Filters\Variables;
 use Predis\Connection\ConnectionException;
@@ -44,14 +45,13 @@ class Airbnb extends BaseFeature {
     }
 
     /**
-     * @param $_segment_metadata array
-     * @param $projectStructure
+     * @param             $_segment_metadata array
+     * @param ArrayObject $projectStructure
      *
      * @return array
      * @see \ProjectManager::_storeSegments()
-     *
      */
-    public function appendFieldToAnalysisObject( $_segment_metadata, \ArrayObject $projectStructure ) {
+    public function appendFieldToAnalysisObject( $_segment_metadata, ArrayObject $projectStructure ) {
 
         if ( $projectStructure[ 'notes' ]->offsetExists( $_segment_metadata[ 'internal_id' ] ) ) {
 
@@ -97,6 +97,9 @@ class Airbnb extends BaseFeature {
 
     }
 
+    /**
+     * @throws Exception
+     */
     public function filterRevisionChangeNotificationList( $emails ) {
         // TODO: add custom email recipients here
         $config = self::getConfig();
@@ -159,7 +162,7 @@ class Airbnb extends BaseFeature {
      *
      * @throws ConnectionException
      * @throws ReflectionException
-     * @throws \Exceptions\ValidationError
+     * @throws ValidationError
      */
     public function validateProjectCreation( $projectStructure ) {
         //override Revise Improved qa Model
@@ -281,7 +284,7 @@ class Airbnb extends BaseFeature {
             // $source = "<ph id="mtc_1" equiv-text="base64:JXtmaXJzdF9uYW1lfQ=="/> has 1 hour left to respond<ph id="mtc_2" equiv-text="base64:fHx8fA=="/><ph id="mtc_3"
             // equiv-text="base64:JXtmaXJzdF9uYW1lfQ=="/> has <ph id="mtc_4" equiv-text="base64:JXtzbWFydF9jb3VudH0="/> hours left to respond";
             //
-            // From this, $expectedTargetTagMap is obtained by analysing the splitted source segment taking into account the number of plural forms of target.
+            // From this, $expectedTargetTagMap is obtained by analysing the split source segment taking into account the number of plural forms of target.
             //
             // 1 Plural form:
             //
