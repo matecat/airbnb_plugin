@@ -395,7 +395,7 @@ const init = () => {
         'de',
         'en',
         'es',
-        'kr',
+        'kn',
         'ka',
         'fi',
         'el',
