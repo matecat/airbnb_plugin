@@ -395,7 +395,6 @@ const init = () => {
         'de',
         'en',
         'es',
-        'kn',
         'ka',
         'fi',
         'el',
@@ -416,7 +415,7 @@ const init = () => {
         'sw',
       ],
 
-      french_like: ['fr', 'hy', 'hi', 'pt-BR', 'xh', 'zu'],
+      french_like: ['fr', 'kn', 'hy', 'hi', 'pt-BR', 'xh', 'zu'],
 
       thai_like: ['az', 'id', 'th', 'tr'],
 
