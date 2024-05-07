@@ -47,11 +47,14 @@ class Pluralization
             case "hu-HU":
             case "hy-AM":
             case "ka-GE":
+            case "kn-IN":
             case "is-IS":
             case "it-IT":
             case "mk-MK":
+            case "mr-IN":
             case "nb-NO":
             case "nl-NL":
+            case "nl-BE":
             case "nn-NO":
             case "pt-BR":
             case "pt-PT":

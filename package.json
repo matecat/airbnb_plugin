@@ -2,28 +2,7 @@
   "name": "matecat-airbnb-plugin",
   "version": "1.0.0",
   "description": "",
-  "main": "Gruntfile.js",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
   "author": "MateCat Team",
   "license": "LGPL",
-  "dependencies": {
-    "js-cookie": "^2.2.1",
-    "keymirror": "^0.1.1",
-    "lodash": "^4.17.19"
-  },
-  "devDependencies": {
-    "@babel/core": "^7.13.14",
-    "@babel/preset-env": "^7.13.12",
-    "@babel/preset-react": "^7.13.13",
-    "babelify": "^10.0.0",
-    "grunt": "^1.5.3",
-    "grunt-browserify": "^6.0.0",
-    "grunt-contrib-concat": "^1.0.1",
-    "grunt-sass": "~3.1.0",
-    "grunt-strip": "^0.2.1",
-    "grunt-text-replace": "^0.4.0",
-    "node-sass": "^8.0"
-  }
+  "dependencies": {}
 }
