@@ -17,7 +17,11 @@ const init = () => {
     default: (value) => TextUtils.getDefaultCharsSize(value),
     custom: [
       (value) => TextUtils.getCJKMatches(value, TextUtils.getUft16CharsSize),
-      (value) => TextUtils.getFullwidthVariantsMatches(value, TextUtils.getUft16CharsSize)
+      (value) =>
+        TextUtils.getFullwidthVariantsMatches(
+          value,
+          TextUtils.getUft16CharsSize,
+        ),
     ],
   }
   SegmentActions.addGlossaryItem = function () {
@@ -398,6 +402,7 @@ const init = () => {
         'he',
         'hu',
         'it',
+        'mr',
         'nl',
         'no',
         'nn',
@@ -410,7 +415,7 @@ const init = () => {
         'sw',
       ],
 
-      french_like: ['fr', 'hy', 'hi', 'pt-BR', 'xh', 'zu'],
+      french_like: ['fr', 'kn', 'hy', 'hi', 'pt-BR', 'xh', 'zu'],
 
       thai_like: ['az', 'id', 'th', 'tr'],
 
