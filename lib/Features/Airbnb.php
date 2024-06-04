@@ -362,6 +362,9 @@ class Airbnb extends BaseFeature {
             sort( $targetTagMap[ 0 ] );
             sort( $targetTagMap[ 1 ] );
 
+            $smartCountErrors = 0;
+            $tagOrderErrors = 0;
+
             foreach ($expectedTargetTagMap as $index => $expectedTargetTags){
 
                 $currentTargetTagMap = $targetTagMap[$index];
@@ -370,20 +373,31 @@ class Airbnb extends BaseFeature {
                 $check2 = array_diff($expectedTargetTags, $currentTargetTagMap);
 
                 if(!empty($check) or !empty($check2)){
-                    $QA->addCustomError( [
-                        'code'  => QA::SMART_COUNT_MISMATCH,
-                        'debug' => '%{smart_count} tag count mismatch',
-                        'tip'   => 'Check the count of %{smart_count} tags in the source.'
-                    ] );
+                    $smartCountErrors++;
 
-                    return QA::SMART_COUNT_MISMATCH;
                 }
 
                 if($currentTargetTagMap !== $expectedTargetTags){
-                    $QA->addError( QA::ERR_TAG_ORDER );
-
-                    return QA::ERR_TAG_ORDER;
+                    $tagOrderErrors++;
                 }
+            }
+
+            // If there is at least ONE smart count mismatch, return an error
+            if($smartCountErrors > 0){
+                $QA->addCustomError( [
+                    'code'  => QA::SMART_COUNT_MISMATCH,
+                    'debug' => '%{smart_count} tag count mismatch',
+                    'tip'   => 'Check the count of %{smart_count} tags in the source.'
+                ] );
+
+                return QA::SMART_COUNT_MISMATCH;
+            }
+
+            // Otherwise, consider if there is at least tag order mismatch, return a warning
+            if($tagOrderErrors > 0){
+                $QA->addError( QA::ERR_TAG_ORDER );
+
+                return QA::ERR_TAG_ORDER;
             }
 
             $QA->addCustomError( [
