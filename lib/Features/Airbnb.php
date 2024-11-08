@@ -106,7 +106,7 @@ class Airbnb extends BaseFeature {
 
         if ( isset( $config[ 'revision_change_notification_recipients' ] ) ) {
             foreach ( $config[ 'revision_change_notification_recipients' ] as $recipient ) {
-                list( $firstName, $lastName, $email ) = explode( ',', $recipient );
+                [ $firstName, $lastName, $email ] = explode( ',', $recipient );
                 $emails[] = [
                         'recipient'              => new Users_UserStruct( [
                                 'email'      => $email,
@@ -158,16 +158,15 @@ class Airbnb extends BaseFeature {
     /**
      * Entry point for project data validation for this feature.
      *
-     * @param $projectStructure
+     * @param ArrayObject $projectStructure
      *
      * @throws ConnectionException
      * @throws ReflectionException
-     * @throws ValidationError
      */
-    public function validateProjectCreation( $projectStructure ) {
+    public function loadCustomQualityFramework( ArrayObject $projectStructure ) {
         //override Revise Improved qa Model
         $qa_mode_file = realpath( self::getPluginBasePath() . "/../qa_model.json" );
-        ReviewExtended::loadAndValidateModelFromJsonFile( $projectStructure, $qa_mode_file );
+        SecondPassReview::loadAndValidateQualityFramework( $projectStructure, $qa_mode_file );
     }
 
     public function fromLayer0ToLayer1( Pipeline $channel ) {
