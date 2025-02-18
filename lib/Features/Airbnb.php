@@ -144,6 +144,9 @@ class Airbnb extends BaseFeature {
         }
 
         $segmentsList->id_after = null;
+
+        $segmentsList->isSpice = true;
+
     }
 
     /**
