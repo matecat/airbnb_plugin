@@ -6,6 +6,8 @@ import SegmentStore from '../../../../../public/js/cat_source/es6/stores/Segment
 import SegmentFooterTabMessages from '../../../../../public/js/cat_source/es6/components/segments/SegmentFooterTabMessages'
 import SegmentFooter from '../../../../../public/js/cat_source/es6/components/segments/SegmentFooter'
 import SegmentUtils from '../../../../../public/js/cat_source/es6/utils/segmentUtils'
+import { CatToolInterface } from '../../../../../public/js/cat_source/es6/pages/CatToolInterface'
+import { CHARS_SIZE_COUNTER_TYPES } from '../../../../../public/js/cat_source/es6/utils/charsSizeCounterUtil'
 // Override characters size mapping
 
 const AIRBNB_FEATURE = 'airbnb'
@@ -453,6 +455,8 @@ const init = () => {
   overrideTabMessages(SegmentFooterTabMessages)
   overrideSetDefaultTabOpen(SegmentFooter)
   ovverrideSegmentUtilFn(SegmentUtils)
+
+  CatToolInterface.prototype.getCharacterCounterMode = () => CHARS_SIZE_COUNTER_TYPES.EXCLUDE_CJK
 }
 document.addEventListener('DOMContentLoaded', function (event) {
   if (config.project_plugins.indexOf(AIRBNB_FEATURE) > -1) init()
