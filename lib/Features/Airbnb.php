@@ -158,20 +158,6 @@ class Airbnb extends BaseFeature {
         return $formatted;
     }
 
-    /**
-     * Entry point for project data validation for this feature.
-     *
-     * @param ArrayObject $projectStructure
-     *
-     * @throws ConnectionException
-     * @throws ReflectionException
-     */
-    public function loadCustomQualityFramework( ArrayObject $projectStructure ) {
-        //override Revise Improved qa Model
-        $qa_mode_file = realpath( self::getPluginBasePath() . "/../qa_model.json" );
-        SecondPassReview::loadAndValidateQualityFramework( $projectStructure, $qa_mode_file );
-    }
-
     public function fromLayer0ToLayer1( Pipeline $channel ) {
         $channel->addAfter( new Variables(), new SmartCounts() );
 
