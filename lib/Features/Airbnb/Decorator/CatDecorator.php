@@ -58,7 +58,7 @@ class CatDecorator extends AbstractCatDecorator {
     }
 
     protected function decorateForTranslate(){
-        $this->template->footer_show_revise_link = false;
+        $this->template->{'footer_show_revise_link'} = false;
     }
 
     /**
