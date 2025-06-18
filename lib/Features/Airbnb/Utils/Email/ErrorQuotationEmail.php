@@ -9,9 +9,6 @@
 
 namespace Features\Airbnb\Utils\Email;
 
-use Email\AbstractEmail;
-use INIT;
-
 class ErrorQuotationEmail extends \Features\Outsource\Email\ErrorQuotationEmail {
 
 }
