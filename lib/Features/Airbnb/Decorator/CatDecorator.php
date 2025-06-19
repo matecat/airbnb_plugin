@@ -8,10 +8,10 @@ use Features\Airbnb;
 use Features\Airbnb\Model\SegmentDelivery\SegmentDeliveryDao;
 use INIT;
 use SimpleJWT;
-use TemplateDecorator\AbstractCatDecorator;
-use TemplateDecorator\ArgumentInterface;
+use Views\TemplateDecorator\AbstractDecorator;
+use Views\TemplateDecorator\Arguments\ArgumentInterface;
 
-class CatDecorator extends AbstractCatDecorator {
+class CatDecorator extends AbstractDecorator {
 
     private ?ArgumentInterface $arguments;
 
