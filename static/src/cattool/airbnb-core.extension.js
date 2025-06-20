@@ -1,4 +1,5 @@
 import React from 'react'
+import $ from 'jquery'
 import {isUndefined, forOwn} from 'lodash'
 import TextUtils from '../../../../../public/js/cat_source/es6/utils/textUtils'
 import SegmentActions from '../../../../../public/js/cat_source/es6/actions/SegmentActions'
