@@ -8,7 +8,6 @@
 
 namespace Features;
 
-use API\V2\Json\ProjectUrls;
 use ArrayObject;
 use Engines_AbstractEngine;
 use Engines_MMT;
@@ -20,11 +19,10 @@ use LQA\QA;
 use Matecat\SubFiltering\Commons\Pipeline;
 use Matecat\SubFiltering\Filters\SmartCounts;
 use Matecat\SubFiltering\Filters\Variables;
-use Predis\Connection\ConnectionException;
-use ReflectionException;
 use Segments_SegmentStruct;
 use TaskRunner\Commons\QueueElement;
 use Users_UserStruct;
+use View\API\V2\Json\ProjectUrls;
 
 
 class Airbnb extends BaseFeature {
@@ -151,7 +149,7 @@ class Airbnb extends BaseFeature {
     /**
      * @param ProjectUrls $formatted
      *
-     * @return \API\V2\JSON\ProjectUrls
+     * @return \View\API\V2\Json\ProjectUrls
      */
     public static function projectUrls( ProjectUrls $formatted ) {
         return $formatted;
