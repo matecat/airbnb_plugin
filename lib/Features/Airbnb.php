@@ -8,24 +8,21 @@
 
 namespace Features;
 
-use API\V2\Json\ProjectUrls;
 use ArrayObject;
 use Engines_AbstractEngine;
 use Engines_MMT;
 use Exception;
-use Exceptions\ValidationError;
 use Features;
 use Features\Airbnb\Utils\SmartCount\Pluralization;
 use Klein\Klein;
-use LQA\QA;
 use Matecat\SubFiltering\Commons\Pipeline;
 use Matecat\SubFiltering\Filters\SmartCounts;
 use Matecat\SubFiltering\Filters\Variables;
-use Predis\Connection\ConnectionException;
-use ReflectionException;
-use Segments_SegmentStruct;
+use Model\Segments\SegmentStruct;
 use TaskRunner\Commons\QueueElement;
 use Users_UserStruct;
+use Utils\LQA\QA;
+use View\API\V2\Json\ProjectUrls;
 
 
 class Airbnb extends BaseFeature {
@@ -123,7 +120,7 @@ class Airbnb extends BaseFeature {
     }
 
     /**
-     * @param $segmentsList Segments_SegmentStruct[]
+     * @param $segmentsList SegmentStruct[]
      * @param $postInput
      *
      * @see \getContributionController::doAction()
@@ -133,7 +130,7 @@ class Airbnb extends BaseFeature {
     public function rewriteContributionContexts( $segmentsList, $postInput ) {
 
         if ( !is_object( $segmentsList->id_before ) ) {
-            $segmentsList->id_before = new Segments_SegmentStruct();
+            $segmentsList->id_before = new SegmentStruct();
         }
 
         if ( strpos( $postInput[ 'context_before' ], 'phrase_key|¶|' ) !== false ) {
@@ -152,7 +149,7 @@ class Airbnb extends BaseFeature {
     /**
      * @param ProjectUrls $formatted
      *
-     * @return \API\V2\JSON\ProjectUrls
+     * @return \View\API\V2\Json\ProjectUrls
      */
     public static function projectUrls( ProjectUrls $formatted ) {
         return $formatted;
@@ -173,7 +170,7 @@ class Airbnb extends BaseFeature {
      * indicating that _checkTagPositions() function should continue or not
      *
      * @param $errorType
-     * @param QA $QA
+     * @param \Utils\LQA\QA $QA
      *
      * @return bool
      */
@@ -235,7 +232,7 @@ class Airbnb extends BaseFeature {
      * No error will be produced.
      *
      * @param     $errorType
-     * @param QA  $QA
+     * @param \Utils\LQA\QA $QA
      *
      * @return int
      */

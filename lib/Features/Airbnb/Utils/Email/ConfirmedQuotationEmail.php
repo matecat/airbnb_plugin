@@ -8,9 +8,6 @@
 
 namespace Features\Airbnb\Utils\Email;
 
-use Email\AbstractEmail;
-use INIT;
-
 class ConfirmedQuotationEmail extends \Features\Outsource\Email\ConfirmedQuotationEmail {
 
 }
