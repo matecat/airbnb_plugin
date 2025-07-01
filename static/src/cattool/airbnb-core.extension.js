@@ -1,13 +1,14 @@
 import React from 'react'
+import $ from 'jquery'
 import {isUndefined, forOwn} from 'lodash'
-import TextUtils from '../../../../../public/js/cat_source/es6/utils/textUtils'
-import SegmentActions from '../../../../../public/js/cat_source/es6/actions/SegmentActions'
-import SegmentStore from '../../../../../public/js/cat_source/es6/stores/SegmentStore'
-import SegmentFooterTabMessages from '../../../../../public/js/cat_source/es6/components/segments/SegmentFooterTabMessages'
-import SegmentFooter from '../../../../../public/js/cat_source/es6/components/segments/SegmentFooter'
-import SegmentUtils from '../../../../../public/js/cat_source/es6/utils/segmentUtils'
-import { CatToolInterface } from '../../../../../public/js/cat_source/es6/pages/CatToolInterface'
-import { CHARS_SIZE_COUNTER_TYPES } from '../../../../../public/js/cat_source/es6/utils/charsSizeCounterUtil'
+import TextUtils from '../../../../../public/js/utils/textUtils'
+import SegmentActions from '../../../../../public/js/actions/SegmentActions'
+import SegmentStore from '../../../../../public/js/stores/SegmentStore'
+import SegmentFooterTabMessages from '../../../../../public/js/components/segments/SegmentFooterTabMessages'
+import SegmentFooter from '../../../../../public/js/components/segments/SegmentFooter'
+import SegmentUtils from '../../../../../public/js/utils/segmentUtils'
+import { CatToolInterface } from '../../../../../public/js/pages/CatToolInterface'
+import { CHARS_SIZE_COUNTER_TYPES } from '../../../../../public/js/utils/charsSizeCounterUtil'
 // Override characters size mapping
 
 const AIRBNB_FEATURE = 'airbnb'
@@ -92,12 +93,13 @@ const init = () => {
   }
 
   function overrideTabMessages(SegmentTabMessages) {
+    const originalFn = SegmentTabMessages.prototype.getNotes
     SegmentTabMessages.prototype.getNotes = function () {
       let notesHtml = []
       let self = this
       if (this.props.notes) {
         const {metadata} = this.props
-        this.props.notes.forEach(function (item, index) {
+        this.props.notes.forEach((item, index) => {
           if (item.note && item.note !== '') {
             if (item.note.indexOf('¶') === -1) {
               // jsont2
@@ -127,6 +129,8 @@ const init = () => {
                     </div>
                   )
                   notesHtml.push(html)
+                } else {
+                  notesHtml = originalFn.call(self)
                 }
               }
             }
