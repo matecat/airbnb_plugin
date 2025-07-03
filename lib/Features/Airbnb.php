@@ -19,8 +19,8 @@ use Matecat\SubFiltering\Commons\Pipeline;
 use Matecat\SubFiltering\Filters\SmartCounts;
 use Matecat\SubFiltering\Filters\Variables;
 use Model\Segments\SegmentStruct;
+use Model\Users\UserStruct;
 use TaskRunner\Commons\QueueElement;
-use Users_UserStruct;
 use Utils\LQA\QA;
 use View\API\V2\Json\ProjectUrls;
 
@@ -105,7 +105,7 @@ class Airbnb extends BaseFeature {
             foreach ( $config[ 'revision_change_notification_recipients' ] as $recipient ) {
                 [ $firstName, $lastName, $email ] = explode( ',', $recipient );
                 $emails[] = [
-                        'recipient'              => new Users_UserStruct( [
+                        'recipient'              => new UserStruct( [
                                 'email'      => $email,
                                 'first_name' => $firstName,
                                 'last_name'  => $lastName
