@@ -1,5 +1,5 @@
-import { UseProjectTemplateInterface } from "../../../../../public/js/hooks/useProjectTemplates"
-import { CHARS_SIZE_COUNTER_TYPES } from "../../../../../public/js/utils/charsSizeCounterUtil"
+import { UseProjectTemplateInterface } from "../../../../../public/js/cat_source/es6/hooks/useProjectTemplates"
+import { CHARS_SIZE_COUNTER_TYPES } from "../../../../../public/js/cat_source/es6/utils/charsSizeCounterUtil"
 
 const AIRBNB_FEATURE = 'airbnb'
 
