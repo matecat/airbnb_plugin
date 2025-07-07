@@ -9,8 +9,6 @@
 namespace Features;
 
 use ArrayObject;
-use Engines_AbstractEngine;
-use Engines_MMT;
 use Exception;
 use Features\Airbnb\Utils\SmartCount\Pluralization;
 use Klein\Klein;
@@ -20,8 +18,10 @@ use Matecat\SubFiltering\Filters\Variables;
 use Model\FeaturesBase\FeatureCodes;
 use Model\Segments\SegmentStruct;
 use Model\Users\UserStruct;
-use TaskRunner\Commons\QueueElement;
+use Utils\Engines\AbstractEngine;
+use Utils\Engines\MMT;
 use Utils\LQA\QA;
+use Utils\TaskRunner\Commons\QueueElement;
 use View\API\V2\Json\ProjectUrls;
 
 
@@ -76,7 +76,7 @@ class Airbnb extends BaseFeature {
      * @return mixed
      * @see Airbnb::appendFieldToAnalysisObject()
      *
-     * @see \Engines_MyMemory::get()
+     * @see \Utils\Engines\MyMemory::get()
      */
     public function filterMyMemoryGetParameters( $parameters, $original_config ) {
 
@@ -394,8 +394,8 @@ class Airbnb extends BaseFeature {
         return $errorType;
     }
 
-    public static function analysisBeforeMTGetContribution( $config, Engines_AbstractEngine $engine, QueueElement $queueElement ) {
-        if ( $engine instanceof Engines_MMT ) {
+    public static function analysisBeforeMTGetContribution( $config, AbstractEngine $engine, QueueElement $queueElement ) {
+        if ( $engine instanceof MMT ) {
             //tell to the MMT that this is the analysis phase ( override default configuration )
             $engine->setAnalysis( false );
         }
