@@ -92,7 +92,7 @@ const init = () => {
   }
 
   function overrideTabMessages(SegmentTabMessages) {
-    const originalFn = SegmentTabMessages.prototype.getNotes
+    const noteStructure = SegmentTabMessages.prototype.getNoteStructure
     SegmentTabMessages.prototype.getNotes = function () {
       let notesHtml = []
       let self = this
@@ -100,7 +100,10 @@ const init = () => {
         this.props.notes.forEach((item, index) => {
           if (item.note && item.note !== '') {
             if (item.note.indexOf('¶') === -1) {
-              notesHtml = originalFn.call(self)
+              const noteHtml = noteStructure.call(this, item, index)
+              if (noteHtml) {
+                notesHtml.push(noteHtml)
+              }
             }
           }
         })
