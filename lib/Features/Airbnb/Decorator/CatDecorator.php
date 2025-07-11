@@ -3,13 +3,13 @@
 namespace Features\Airbnb\Decorator;
 
 
-use CookieManager;
+use Controller\Abstracts\Authentication\CookieManager;
+use Controller\Views\TemplateDecorator\AbstractDecorator;
+use Controller\Views\TemplateDecorator\Arguments\ArgumentInterface;
 use Features\Airbnb;
 use Features\Airbnb\Model\SegmentDelivery\SegmentDeliveryDao;
 use INIT;
 use SimpleJWT;
-use Controller\Views\TemplateDecorator\AbstractDecorator;
-use Controller\Views\TemplateDecorator\Arguments\ArgumentInterface;
 
 class CatDecorator extends AbstractDecorator {
 

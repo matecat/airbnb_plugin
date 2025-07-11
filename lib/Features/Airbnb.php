@@ -18,6 +18,7 @@ use Matecat\SubFiltering\Filters\Variables;
 use Model\FeaturesBase\FeatureCodes;
 use Model\Segments\SegmentStruct;
 use Model\Users\UserStruct;
+use Plugins\Features\BaseFeature;
 use Utils\Engines\AbstractEngine;
 use Utils\Engines\MMT;
 use Utils\LQA\QA;
@@ -33,7 +34,7 @@ class Airbnb extends BaseFeature {
 
     const DELIVERY_COOKIE_PREFIX = 'airbnb_session_';
 
-    public static $dependencies = [
+    public static array $dependencies = [
             FeatureCodes::TRANSLATION_VERSIONS,
             FeatureCodes::REVIEW_EXTENDED
     ];
