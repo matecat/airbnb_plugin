@@ -8,7 +8,7 @@ use Controller\Views\TemplateDecorator\AbstractDecorator;
 use Controller\Views\TemplateDecorator\Arguments\ArgumentInterface;
 use Features\Airbnb;
 use Features\Airbnb\Model\SegmentDelivery\SegmentDeliveryDao;
-use INIT;
+use Utils\Registry\AppConfig;
 use Utils\Tools\SimpleJWT;
 
 class CatDecorator extends AbstractDecorator {
@@ -47,7 +47,7 @@ class CatDecorator extends AbstractDecorator {
                 [
                         'expires'  => strtotime( '-20 minutes' ),
                         'path'     => '/',
-                        'domain'   => INIT::$COOKIE_DOMAIN,
+                        'domain'   => AppConfig::$COOKIE_DOMAIN,
                         'secure'   => true,
                         'httponly' => true,
                         'samesite' => 'None',
