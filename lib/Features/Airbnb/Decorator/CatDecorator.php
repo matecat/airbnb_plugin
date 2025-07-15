@@ -9,7 +9,7 @@ use Controller\Views\TemplateDecorator\Arguments\ArgumentInterface;
 use Features\Airbnb;
 use Features\Airbnb\Model\SegmentDelivery\SegmentDeliveryDao;
 use INIT;
-use SimpleJWT;
+use Utils\Tools\SimpleJWT;
 
 class CatDecorator extends AbstractDecorator {
 
