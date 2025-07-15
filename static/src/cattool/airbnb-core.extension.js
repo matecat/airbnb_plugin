@@ -1,7 +1,6 @@
 import React from 'react'
 import $ from 'jquery'
 import {isUndefined, forOwn} from 'lodash'
-import TextUtils from '../../../../../public/js/utils/textUtils'
 import SegmentActions from '../../../../../public/js/actions/SegmentActions'
 import SegmentStore from '../../../../../public/js/stores/SegmentStore'
 import SegmentFooterTabMessages from '../../../../../public/js/components/segments/SegmentFooterTabMessages'
@@ -93,45 +92,17 @@ const init = () => {
   }
 
   function overrideTabMessages(SegmentTabMessages) {
-    const originalFn = SegmentTabMessages.prototype.getNotes
+    const noteStructure = SegmentTabMessages.prototype.getNoteStructure
     SegmentTabMessages.prototype.getNotes = function () {
       let notesHtml = []
       let self = this
       if (this.props.notes) {
-        const {metadata} = this.props
         this.props.notes.forEach((item, index) => {
           if (item.note && item.note !== '') {
             if (item.note.indexOf('¶') === -1) {
-              // jsont2
-              if (
-                metadata &&
-                metadata.find(({meta_key}) => meta_key === 'id_content') &&
-                metadata.find(({meta_key}) => meta_key === 'id_request')
-              ) {
-                let note = item.note
-                note = TextUtils.replaceUrl(note.replace(/[ ]*\n/g, '<br>\n'))
-                const html = (
-                  <div className="note" key={'note-' + index}>
-                    <span className="note-label">Note: </span>
-                    <span dangerouslySetInnerHTML={self.allowHTML(note)} />
-                  </div>
-                )
-                notesHtml.push(html)
-              } else {
-                let split = item.note.split(':')
-                if (split.length > 1) {
-                  let note = item.note.replace(split[0] + ':', '')
-                  note = TextUtils.replaceUrl(note.replace(/[ ]*\n/g, '<br>\n'))
-                  const html = (
-                    <div className="note" key={'note-' + index}>
-                      <span className="note-label">{split[0]}:</span>
-                      <span dangerouslySetInnerHTML={self.allowHTML(note)} />
-                    </div>
-                  )
-                  notesHtml.push(html)
-                } else {
-                  notesHtml = originalFn.call(self)
-                }
+              const noteHtml = noteStructure.call(this, item, index)
+              if (noteHtml) {
+                notesHtml.push(noteHtml)
               }
             }
           }
