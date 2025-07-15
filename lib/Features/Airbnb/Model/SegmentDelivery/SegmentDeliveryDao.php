@@ -2,8 +2,8 @@
 
 namespace Features\Airbnb\Model\SegmentDelivery;
 
-use DataAccess\AbstractDao;
-use Database;
+use Model\DataAccess\AbstractDao;
+use Model\DataAccess\Database;
 
 class SegmentDeliveryDao extends AbstractDao {
 
