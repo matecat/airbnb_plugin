@@ -8,6 +8,7 @@ import SegmentFooter from '../../../../../public/js/components/segments/SegmentF
 import SegmentUtils from '../../../../../public/js/utils/segmentUtils'
 import { CatToolInterface } from '../../../../../public/js/pages/CatToolInterface'
 import { CHARS_SIZE_COUNTER_TYPES } from '../../../../../public/js/utils/charsSizeCounterUtil'
+import globalFunctions from '../../../../../public/js/globalFunctions'
 // Override characters size mapping
 
 const AIRBNB_FEATURE = 'airbnb'
@@ -18,77 +19,84 @@ const init = () => {
   SegmentActions.addGlossaryItem = function () {
     return false
   }
-  if (typeof UI !== 'undefined') {
-    $.extend(UI, {
-      originalRegisterFooterTabs: UI.registerFooterTabs,
+  const getSegmentId = function (segment) {
+    if (typeof segment == 'undefined') return false
+    if (segment.el) {
+      return segment.el.attr('id').replace('segment-', '')
+    }
+    try {
+      segment = segment.closest('section')
+      return $(segment).attr('id').replace('segment-', '')
+    } catch (e) {
+      return false
+    }
+  }
+  const originalRegisterFooterTabs = globalFunctions.registerFooterTabs
+  globalFunctions.registerFooterTabs = function () {
+    originalRegisterFooterTabs.apply(this)
+    SegmentActions.registerTab('messages', true, true)
+  }
+  globalFunctions.getContextBefore = function (segmentId) {
+    let segmentObj
+    let phraseKeyNote
+    try {
+      segmentObj = SegmentStore.getSegmentByIdToJS(segmentId)
+      phraseKeyNote = segmentObj.notes.find((item) => {
+        return (
+          item.note.indexOf('phrase_key|¶|') >= 0 ||
+          item.note.indexOf('translation_context|¶|') >= 0
+        )
+      })
+    } catch (e) {
+      return null
+    }
 
-      registerFooterTabs: function () {
-        this.originalRegisterFooterTabs.apply(this)
-        SegmentActions.registerTab('messages', true, true)
-      },
-      getContextBefore: function (segmentId) {
-        let segmentObj
-        let phraseKeyNote
-        try {
-          segmentObj = SegmentStore.getSegmentByIdToJS(segmentId)
-          phraseKeyNote = segmentObj.notes.find((item) => {
-            return (
-              item.note.indexOf('phrase_key|¶|') >= 0 ||
-              item.note.indexOf('translation_context|¶|') >= 0
-            )
-          })
-        } catch (e) {
-          return null
-        }
-
-        if (phraseKeyNote) {
-          return phraseKeyNote.note
-        } else {
-          return null
-        }
-      },
-      getContextAfter: function (segmentId) {
-        return ''
-      },
-      getIdBefore: function (segmentId) {
-        var segment = $('#segment-' + segmentId)
-        var originalId = segment.attr('data-split-original-id')
-        var segmentBefore = (function findBefore(segment) {
-          var before = segment.prev()
-          if (before.length === 0) {
-            return undefined
-          } else if (before.attr('data-split-original-id') !== originalId) {
-            return before
-          } else {
-            return findBefore(before)
-          }
-        })(segment)
-        // var segmentBefore = findSegmentBefore();
-        if (isUndefined(segmentBefore)) {
-          return null
-        }
-        var segmentBeforeId = UI.getSegmentId(segmentBefore)
-        return segmentBeforeId
-      },
-      getIdAfter: function (segmentId) {
-        var segment = $('#segment-' + segmentId)
-        var originalId = segment.attr('data-split-original-id')
-        var segmentAfter = (function findAfter(segment) {
-          var after = segment.next()
-          if (after.length === 0) {
-            return undefined
-          } else if (after.attr('data-split-original-id') !== originalId) {
-            return after
-          } else {
-            return findAfter(after)
-          }
-        })(segment)
-        if (isUndefined(segmentAfter)) {
-          return null
-        }
-        return UI.getSegmentId(segmentAfter)
-      },
-    })
+    if (phraseKeyNote) {
+      return phraseKeyNote.note
+    } else {
+      return null
+    }
+  }
+  globalFunctions.getContextAfter = function () {
+    return ''
+  }
+  globalFunctions.getIdBefore = function (segmentId) {
+    var segment = $('#segment-' + segmentId)
+    var originalId = segment.attr('data-split-original-id')
+    var segmentBefore = (function findBefore(segment) {
+      var before = segment.prev()
+      if (before.length === 0) {
+        return undefined
+      } else if (before.attr('data-split-original-id') !== originalId) {
+        return before
+      } else {
+        return findBefore(before)
+      }
+    })(segment)
+    // var segmentBefore = findSegmentBefore();
+    if (isUndefined(segmentBefore)) {
+      return null
+    }
+    var segmentBeforeId = getSegmentId(segmentBefore)
+    return segmentBeforeId
+  }
+  globalFunctions.getIdAfter = function (segmentId) {
+    var segment = $('#segment-' + segmentId)
+    var originalId = segment.attr('data-split-original-id')
+    var segmentAfter = (function findAfter(segment) {
+      var after = segment.next()
+      if (after.length === 0) {
+        return undefined
+      } else if (after.attr('data-split-original-id') !== originalId) {
+        return after
+      } else {
+        return findAfter(after)
+      }
+    })(segment)
+    if (isUndefined(segmentAfter)) {
+      return null
+    }
+    return getSegmentId(segmentAfter)
   }
 
   function overrideTabMessages(SegmentTabMessages) {
