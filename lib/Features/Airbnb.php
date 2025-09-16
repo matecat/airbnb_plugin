@@ -150,14 +150,14 @@ class Airbnb extends BaseFeature {
     /**
      * @param ProjectUrls $formatted
      *
-     * @return \View\API\V2\Json\ProjectUrls
+     * @return ProjectUrls
      */
     public static function projectUrls( ProjectUrls $formatted ) {
         return $formatted;
     }
 
     public function fromLayer0ToLayer1( Pipeline $channel ) {
-        $channel->addAfter( new Variables(), new SmartCounts() );
+        $channel->addAfter( Variables::class, SmartCounts::class );
 
         return $channel;
     }
