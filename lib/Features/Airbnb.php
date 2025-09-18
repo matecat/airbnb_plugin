@@ -13,8 +13,8 @@ use Exception;
 use Features\Airbnb\Utils\SmartCount\Pluralization;
 use Klein\Klein;
 use Matecat\SubFiltering\Commons\Pipeline;
+use Matecat\SubFiltering\Filters\PercentDoubleCurlyBrackets;
 use Matecat\SubFiltering\Filters\SmartCounts;
-use Matecat\SubFiltering\Filters\Variables;
 use Model\FeaturesBase\FeatureCodes;
 use Model\Segments\SegmentStruct;
 use Model\Users\UserStruct;
@@ -157,7 +157,7 @@ class Airbnb extends BaseFeature {
     }
 
     public function fromLayer0ToLayer1( Pipeline $channel ) {
-        $channel->addAfter( Variables::class, SmartCounts::class );
+        $channel->addAfter( PercentDoubleCurlyBrackets::class, SmartCounts::class );
 
         return $channel;
     }
