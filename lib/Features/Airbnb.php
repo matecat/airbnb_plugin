@@ -13,7 +13,7 @@ use Exception;
 use Features\Airbnb\Utils\SmartCount\Pluralization;
 use Klein\Klein;
 use Matecat\SubFiltering\Commons\Pipeline;
-use Matecat\SubFiltering\Filters\PercentDoubleCurlyBrackets;
+use Matecat\SubFiltering\Filters\RubyOnRailsI18n;
 use Matecat\SubFiltering\Filters\SmartCounts;
 use Model\FeaturesBase\FeatureCodes;
 use Model\Segments\SegmentStruct;
@@ -157,7 +157,7 @@ class Airbnb extends BaseFeature {
     }
 
     public function fromLayer0ToLayer1( Pipeline $channel ) {
-        $channel->addAfter( PercentDoubleCurlyBrackets::class, SmartCounts::class );
+        $channel->addAfter( RubyOnRailsI18n::class, SmartCounts::class );
 
         return $channel;
     }
