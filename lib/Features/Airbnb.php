@@ -28,11 +28,11 @@ use View\API\V2\Json\ProjectUrls;
 
 class Airbnb extends BaseFeature {
 
-    const FEATURE_CODE = "airbnb";
+    const string FEATURE_CODE = "airbnb";
 
     protected static $service_types = [ 'standard', 'priority' ];
 
-    const DELIVERY_COOKIE_PREFIX = 'airbnb_session_';
+    const string DELIVERY_COOKIE_PREFIX = 'airbnb_session_';
 
     public static array $dependencies = [
             FeatureCodes::TRANSLATION_VERSIONS,
