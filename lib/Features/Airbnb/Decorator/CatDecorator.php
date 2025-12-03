@@ -15,13 +15,15 @@ class CatDecorator extends AbstractDecorator {
 
     private ?ArgumentInterface $arguments;
 
-    public function decorate( ?ArgumentInterface $arguments = null ) {
+    public function decorate(?ArgumentInterface $arguments = null): void
+    {
         $this->arguments = $arguments;
         $this->_checkSessionCookie();
         $this->assignCatDecorator();
     }
 
-    protected function _checkSessionCookie() {
+    protected function _checkSessionCookie(): void
+    {
 
         $chunk = $this->arguments->getJob();
 
@@ -30,7 +32,7 @@ class CatDecorator extends AbstractDecorator {
         }
 
         $cookie  = $_COOKIE[ Airbnb::DELIVERY_COOKIE_PREFIX . $chunk->id ];
-        $payload = SimpleJWT::getInstanceFromString(
+        $payload = SimpleJWT::getValidatedInstanceFromString(
             $cookie,
             AppConfig::$AUTHSECRET
         )->getPayload();
@@ -65,7 +67,11 @@ class CatDecorator extends AbstractDecorator {
     protected function decorateForRevision() {
     }
 
-    protected function assignCatDecorator() {
+    /**
+     * @return void
+     */
+    protected function assignCatDecorator(): void
+    {
         if ( $this->arguments->isRevision() ) {
             $this->decorateForRevision();
         } else {
@@ -73,7 +79,11 @@ class CatDecorator extends AbstractDecorator {
         }
     }
 
-    protected function decorateForTranslate() {
+    /**
+     * @return void
+     */
+    protected function decorateForTranslate(): void
+    {
         $this->template->{'footer_show_revise_link'} = false;
     }
 
