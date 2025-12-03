@@ -30,7 +30,10 @@ class CatDecorator extends AbstractDecorator {
         }
 
         $cookie  = $_COOKIE[ Airbnb::DELIVERY_COOKIE_PREFIX . $chunk->id ];
-        $payload = SimpleJWT::getValidPayload( $cookie );
+        $payload = SimpleJWT::getInstanceFromString(
+            $cookie,
+            AppConfig::$AUTHSECRET
+        )->getPayload();
 
         if ( $payload[ 'id_job' ] == $chunk->id ) {
             $isAJobDeliverable = SegmentDeliveryDao::isAJobDeliverable( $payload[ 'id_job' ] );
