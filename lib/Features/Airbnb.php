@@ -342,10 +342,22 @@ class Airbnb extends BaseFeature {
                 $targetTagMap[] = $itemSegMatch[ 0 ];
             }
 
-            sort( $expectedTargetTagMap[ 0 ] );
-            sort( $expectedTargetTagMap[ 1 ] );
-            sort( $targetTagMap[ 0 ] );
-            sort( $targetTagMap[ 1 ] );
+            // PHP 8.* throws a fatal error if sort() argument is null
+            if($expectedTargetTagMap[ 0 ] !== null){
+                sort( $expectedTargetTagMap[ 0 ] );
+            }
+
+            if($expectedTargetTagMap[ 1 ] !== null){
+                sort( $expectedTargetTagMap[ 1 ] );
+            }
+
+            if($targetTagMap[ 0 ] !== null){
+                sort( $targetTagMap[ 0 ] );
+            }
+
+            if($targetTagMap[ 1 ] !== null){
+                sort( $targetTagMap[ 1 ] );
+            }
 
             $smartCountErrors = 0;
             $tagOrderErrors   = 0;
