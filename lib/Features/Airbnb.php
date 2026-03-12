@@ -47,7 +47,7 @@ class Airbnb extends BaseFeature {
      * @param ArrayObject $projectStructure
      *
      * @return array
-     * @see \Model\ProjectManager\ProjectManager::_storeSegments()
+     * @see \Model\ProjectManager\ProjectManager::storeSegments()
      */
     public function appendFieldToAnalysisObject( $_segment_metadata, ArrayObject $projectStructure ) {
 
