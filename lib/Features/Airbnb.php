@@ -51,7 +51,7 @@ class Airbnb extends BaseFeature {
      */
     public function appendFieldToAnalysisObject( $_segment_metadata, ProjectStructure $projectStructure ) {
 
-        if ( $projectStructure->notes->offsetExists( $_segment_metadata[ 'internal_id' ] ) ) {
+        if ( isset( $projectStructure->notes[ $_segment_metadata[ 'internal_id' ] ] ) ) {
 
             foreach ( $projectStructure->notes[ $_segment_metadata[ 'internal_id' ] ][ 'entries' ] as $k => $entry ) {
 
