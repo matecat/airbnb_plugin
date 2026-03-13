@@ -8,7 +8,6 @@
 
 namespace Features;
 
-use ArrayObject;
 use Exception;
 use Features\Airbnb\Utils\SmartCount\Pluralization;
 use Klein\Klein;
@@ -16,6 +15,7 @@ use Matecat\SubFiltering\Commons\Pipeline;
 use Matecat\SubFiltering\Filters\RubyOnRailsI18n;
 use Matecat\SubFiltering\Filters\SmartCounts;
 use Model\FeaturesBase\FeatureCodes;
+use Model\ProjectCreation\ProjectStructure;
 use Model\Segments\SegmentStruct;
 use Model\Users\UserStruct;
 use Plugins\Features\BaseFeature;
@@ -44,12 +44,12 @@ class Airbnb extends BaseFeature {
 
     /**
      * @param             $_segment_metadata array
-     * @param ArrayObject $projectStructure
+     * @param ProjectStructure $projectStructure
      *
      * @return array
-     * @see \Model\ProjectManager\ProjectManager::storeSegments()
+     * @see \Model\ProjectCreation\ProjectManager::storeSegments()
      */
-    public function appendFieldToAnalysisObject( $_segment_metadata, ArrayObject $projectStructure ) {
+    public function appendFieldToAnalysisObject( $_segment_metadata, ProjectStructure $projectStructure ) {
 
         if ( $projectStructure[ 'notes' ]->offsetExists( $_segment_metadata[ 'internal_id' ] ) ) {
 
