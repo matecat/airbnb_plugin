@@ -15,10 +15,14 @@ use Klein\Klein;
 use Matecat\SubFiltering\Commons\Pipeline;
 use Matecat\SubFiltering\Filters\RubyOnRailsI18n;
 use Matecat\SubFiltering\Filters\SmartCounts;
+use Matecat\SubFiltering\MateCatFilter;
 use Model\FeaturesBase\FeatureCodes;
+use Model\Jobs\JobStruct;
 use Model\Segments\SegmentStruct;
+use Model\Translations\SegmentTranslationStruct;
 use Model\Users\UserStruct;
 use Plugins\Features\BaseFeature;
+use Utils\Contribution\SetContributionRequest;
 use Utils\Engines\AbstractEngine;
 use Utils\Engines\MMT;
 use Utils\LQA\QA;
@@ -431,6 +435,26 @@ class Airbnb extends BaseFeature {
                 "emojiMatches" => 0,
         ];
 
+    }
+
+    /**
+     * @throws Exception
+     */
+    public function filterContributionStructOnMTSet(
+        SetContributionRequest $contributionRequest,
+        SegmentTranslationStruct $segmentTranslationStruct,
+        SegmentStruct $originalSourceSegment,
+        MateCatFilter $filter
+    ): SetContributionRequest {
+        $array = $contributionRequest->toArray();
+        $array['jobStruct'] = new JobStruct($array['jobStruct']);
+        $newContribution = new SetContributionRequest($array);
+        $newContribution->segment = $originalSourceSegment->segment;
+        $newContribution->translation = $segmentTranslationStruct->translation;
+        $newContribution->context_after = $filter->fromLayer1ToLayer0($contributionRequest->context_after);
+        $newContribution->context_before = $filter->fromLayer1ToLayer0($contributionRequest->context_before);
+
+        return $newContribution;
     }
 
 }
