@@ -235,7 +235,7 @@ class Airbnb extends BaseFeature
     public function checkTagMismatch(int $errorType, QA $QA): int
     {
         //check for smart count separator |||| in source segment ( base64 encoded "||||" === "fHx8fA==" )
-        if (strpos($QA->getSourceSeg(), "equiv-text=\"base64:fHx8fA==\"") !== false) {
+        if (str_contains($QA->getSourceSeg(), "equiv-text=\"base64:fHx8fA==\"")) {
             //
             // ----------------------------------------------------------------
             // 1. check for |||| count correspondence
