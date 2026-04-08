@@ -16,6 +16,8 @@ use Matecat\SubFiltering\Filters\RubyOnRailsI18n;
 use Matecat\SubFiltering\Filters\SmartCounts;
 use Matecat\SubFiltering\MateCatFilter;
 use Model\FeaturesBase\FeatureCodes;
+use Model\FeaturesBase\Hook\Event\Filter\FilterContributionStructOnMTSetEvent;
+use Model\FeaturesBase\Hook\Event\Filter\RewriteContributionContextsEvent;
 use Model\Jobs\JobStruct;
 use Model\ProjectCreation\ProjectStructure;
 use Model\Segments\SegmentStruct;
@@ -123,8 +125,11 @@ class Airbnb extends BaseFeature
      *
      * @see \Controller\API\App\SetTranslationController
      */
-    public function rewriteContributionContexts(object $segmentsList, array $postInput): void
+    public function rewriteContributionContexts(RewriteContributionContextsEvent $event): void
     {
+        $segmentsList = $event->getSegmentsList();
+        $postInput = $event->getRequestData();
+
         if (!is_object($segmentsList->id_before)) {
             $segmentsList->id_before = new SegmentStruct();
         }
@@ -139,6 +144,8 @@ class Airbnb extends BaseFeature
         $segmentsList->id_after = null;
 
         $segmentsList->isSpice = true;
+
+        $event->setSegmentsList($segmentsList);
     }
 
     /**
@@ -429,12 +436,13 @@ class Airbnb extends BaseFeature
     /**
      * @throws Exception
      */
-    public function filterContributionStructOnMTSet(
-        SetContributionRequest $contributionRequest,
-        SegmentTranslationStruct $segmentTranslationStruct,
-        SegmentStruct $originalSourceSegment,
-        MateCatFilter $filter
-    ): SetContributionRequest {
+    public function filterContributionStructOnMTSet(FilterContributionStructOnMTSetEvent $event): void
+    {
+        $contributionRequest = $event->getContributionStruct();
+        $segmentTranslationStruct = $event->getTranslation();
+        $originalSourceSegment = $event->getSegment();
+        $filter = $event->getFilter();
+
         $array = $contributionRequest->toArray();
         $array['jobStruct'] = new JobStruct($array['jobStruct']);
         $newContribution = new SetContributionRequest($array);
@@ -443,7 +451,7 @@ class Airbnb extends BaseFeature
         $newContribution->context_after = $filter->fromLayer1ToLayer0($contributionRequest->context_after);
         $newContribution->context_before = $filter->fromLayer1ToLayer0($contributionRequest->context_before);
 
-        return $newContribution;
+        $event->setContributionStruct($newContribution);
     }
 
 }
