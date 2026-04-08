@@ -16,20 +16,24 @@ use Matecat\SubFiltering\Filters\RubyOnRailsI18n;
 use Matecat\SubFiltering\Filters\SmartCounts;
 use Matecat\SubFiltering\MateCatFilter;
 use Model\FeaturesBase\FeatureCodes;
+use Model\FeaturesBase\Hook\Event\Filter\AnalysisBeforeMTGetContributionEvent;
+use Model\FeaturesBase\Hook\Event\Filter\AppendFieldToAnalysisObjectEvent;
+use Model\FeaturesBase\Hook\Event\Filter\CharacterLengthCountEvent;
+use Model\FeaturesBase\Hook\Event\Filter\CheckTagMismatchEvent;
+use Model\FeaturesBase\Hook\Event\Filter\CheckTagPositionsEvent;
+use Model\FeaturesBase\Hook\Event\Filter\FilterMyMemoryGetParametersEvent;
+use Model\FeaturesBase\Hook\Event\Filter\FilterRevisionChangeNotificationListEvent;
 use Model\FeaturesBase\Hook\Event\Filter\FilterContributionStructOnMTSetEvent;
+use Model\FeaturesBase\Hook\Event\Filter\ProjectUrlsEvent;
 use Model\FeaturesBase\Hook\Event\Filter\RewriteContributionContextsEvent;
 use Model\Jobs\JobStruct;
-use Model\ProjectCreation\ProjectStructure;
 use Model\Segments\SegmentStruct;
-use Model\Translations\SegmentTranslationStruct;
 use Model\Users\UserStruct;
 use Plugins\Features\BaseFeature;
 use Utils\Contribution\SetContributionRequest;
-use Utils\Engines\AbstractEngine;
 use Utils\Engines\MMT;
 use Utils\LQA\QA;
-use Utils\TaskRunner\Commons\QueueElement;
-use View\API\V2\Json\ProjectUrls;
+use Model\FeaturesBase\Hook\Event\Filter\PrepareNotesForRenderingEvent;
 
 
 class Airbnb extends BaseFeature
@@ -54,10 +58,13 @@ class Airbnb extends BaseFeature
      * @return array
      * @see \Model\ProjectCreation\ProjectManager::storeSegments()
      */
-    public function appendFieldToAnalysisObject(array $_segment_metadata, ProjectStructure $projectStructure): array
+    public function appendFieldToAnalysisObject(AppendFieldToAnalysisObjectEvent $event): void
     {
+        $_segment_metadata = $event->getMetadata();
+        $projectStructure = $event->getProjectStructure();
+
         if (isset($projectStructure->notes[$_segment_metadata['internal_id']])) {
-            foreach ($projectStructure->notes[$_segment_metadata['internal_id']]['entries'] as $k => $entry) {
+            foreach ($projectStructure->notes[$_segment_metadata['internal_id']]['entries'] as $entry) {
                 if (str_contains($entry, 'phrase_key|¶|')) {
                     $_segment_metadata['additional_params']['spice'] = md5(str_replace('phrase_key|¶|', '', $entry) . $_segment_metadata['segment']);
                 } elseif (str_contains($entry, 'translation_context|¶|')) {
@@ -66,7 +73,7 @@ class Airbnb extends BaseFeature
             }
         }
 
-        return $_segment_metadata;
+        $event->setMetadata($_segment_metadata);
     }
 
     /**
@@ -79,8 +86,11 @@ class Airbnb extends BaseFeature
      *
      * @see \Utils\Engines\MyMemory::get()
      */
-    public function filterMyMemoryGetParameters(array $parameters, array $original_config): array
+    public function filterMyMemoryGetParameters(FilterMyMemoryGetParametersEvent $event): void
     {
+        $parameters = $event->getParameters();
+        $original_config = $event->getConfig();
+
         /*
          * From analysis we will have additional params and spice field
          */
@@ -91,14 +101,16 @@ class Airbnb extends BaseFeature
 
         $parameters['cid'] = Airbnb::FEATURE_CODE;
 
-        return $parameters;
+        $event->setParameters($parameters);
     }
 
     /**
      * @throws Exception
      */
-    public function filterRevisionChangeNotificationList(array $emails): array
+    public function filterRevisionChangeNotificationList(FilterRevisionChangeNotificationListEvent $event): void
     {
+        $emails = $event->getEmails();
+
         // TODO: add custom email recipients here
         $config = self::getConfig();
 
@@ -116,7 +128,7 @@ class Airbnb extends BaseFeature
             }
         }
 
-        return $emails;
+        $event->setEmails($emails);
     }
 
     /**
@@ -153,9 +165,9 @@ class Airbnb extends BaseFeature
      *
      * @return ProjectUrls
      */
-    public static function projectUrls(ProjectUrls $formatted): ProjectUrls
+    public function projectUrls(ProjectUrlsEvent $event): void
     {
-        return $formatted;
+        $event->setFormatted($event->getFormatted());
     }
 
     public function fromLayer0ToLayer1(Pipeline $channel): Pipeline
@@ -178,14 +190,19 @@ class Airbnb extends BaseFeature
      *
      * @return bool
      */
-    public function checkTagPositions(int $errorType, QA $QA): bool
+    public function checkTagPositions(CheckTagPositionsEvent $event): void
     {
+        $QA = $event->getQaInstance();
+        if (!$QA instanceof QA) {
+            return;
+        }
+
         $sourceSplittedByPipeSep = preg_split('/<ph id="mtc_[0-9]{0,10}" ctype="x-smart-count" equiv-text="base64:fHx8fA=="\/>/', $QA->getSourceSeg());
         $sourceSplittedByPipeSepCount = count($sourceSplittedByPipeSep);
 
         // No smart count pipes, continue with _checkTagPositions()
         if ($sourceSplittedByPipeSepCount === 1) {
-            return false;
+            return;
         }
 
         // Smart count check tag position
@@ -209,7 +226,7 @@ class Airbnb extends BaseFeature
             }
         }
 
-        return true;
+        $event->setErrorCode(true);
     }
 
     /**
@@ -239,8 +256,14 @@ class Airbnb extends BaseFeature
      *
      * @return int
      */
-    public function checkTagMismatch(int $errorType, QA $QA): int
+    public function checkTagMismatch(CheckTagMismatchEvent $event): void
     {
+        $errorCode = $event->getErrorCode();
+        $QA = $event->getQaInstance();
+        if (!$QA instanceof QA) {
+            return;
+        }
+
         //check for smart count separator |||| in source segment ( base64 encoded "||||" === "fHx8fA==" )
         if (str_contains($QA->getSourceSeg(), "equiv-text=\"base64:fHx8fA==\"")) {
             //
@@ -258,7 +281,8 @@ class Airbnb extends BaseFeature
                     'tip' => 'Check your language specific configuration.'
                 ]);
 
-                return QA::SMART_COUNT_PLURAL_MISMATCH;
+                $event->setErrorCode(QA::SMART_COUNT_PLURAL_MISMATCH);
+                return;
             }
 
             //
@@ -387,34 +411,40 @@ class Airbnb extends BaseFeature
                     'tip' => 'Check the count of %{smart_count} tags in the source.'
                 ]);
 
-                return QA::SMART_COUNT_MISMATCH;
+                $event->setErrorCode(QA::SMART_COUNT_MISMATCH);
+                return;
             }
 
             // Otherwise, consider if there is at least tag order mismatch, return a warning
             if ($tagOrderErrors > 0) {
                 $QA->addError(QA::ERR_TAG_ORDER);
 
-                return QA::ERR_TAG_ORDER;
+                $event->setErrorCode(QA::ERR_TAG_ORDER);
+                return;
             }
 
             $QA->addCustomError([
                 'code' => 0,
             ]);
 
-            return 0;
+            $event->setErrorCode(0);
+            return;
         }
 
-        return $errorType;
+        $event->setErrorCode($errorCode);
     }
 
-    public static function analysisBeforeMTGetContribution(array $config, AbstractEngine $engine, QueueElement $queueElement): array
+    public function analysisBeforeMTGetContribution(AnalysisBeforeMTGetContributionEvent $event): void
     {
+        $engine = $event->getMtEngine();
+        $config = $event->getConfig();
+
         if ($engine instanceof MMT) {
             //tell to the MMT that this is the analysis phase ( override default configuration )
             $engine->setAnalysis(false);
         }
 
-        return $config;
+        $event->setConfig($config);
     }
 
     /**
@@ -424,13 +454,18 @@ class Airbnb extends BaseFeature
      *
      * @return array
      */
-    public function characterLengthCount(string $string): array
+    public function characterLengthCount(CharacterLengthCountEvent $event): void
     {
-        return [
+        $string = $event->getFilterable();
+        if (!is_string($string)) {
+            return;
+        }
+
+        $event->setFilterable([
             "baseLength" => mb_strlen($string),
             "cjkMatches" => 0,
             "emojiMatches" => 0,
-        ];
+        ]);
     }
 
     /**
