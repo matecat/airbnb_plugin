@@ -24,6 +24,9 @@ class CatDecorator extends AbstractDecorator {
 
     protected function _checkSessionCookie(): void
     {
+        if ($this->arguments === null) {
+            return;
+        }
 
         $chunk = $this->arguments->getJob();
 
@@ -48,7 +51,7 @@ class CatDecorator extends AbstractDecorator {
 
         unset( $_COOKIE[ Airbnb::DELIVERY_COOKIE_PREFIX . $chunk->id ] );
         CookieManager::setCookie( Airbnb::DELIVERY_COOKIE_PREFIX . $chunk->id,
-                null,
+                '',
                 [
                         'expires'  => strtotime( '-20 minutes' ),
                         'path'     => '/',
@@ -64,7 +67,7 @@ class CatDecorator extends AbstractDecorator {
     /**
      * Empty method because it's not necessary to do again what is written into the parent
      */
-    protected function decorateForRevision() {
+    protected function decorateForRevision(): void {
     }
 
     /**
@@ -72,7 +75,7 @@ class CatDecorator extends AbstractDecorator {
      */
     protected function assignCatDecorator(): void
     {
-        if ( $this->arguments->isRevision() ) {
+        if ( $this->arguments !== null && $this->arguments->isRevision() ) {
             $this->decorateForRevision();
         } else {
             $this->decorateForTranslate();
@@ -84,6 +87,7 @@ class CatDecorator extends AbstractDecorator {
      */
     protected function decorateForTranslate(): void
     {
+        /** @phpstan-ignore property.notFound (dynamic PHPTAL template variable) */
         $this->template->{'footer_show_revise_link'} = false;
     }
 

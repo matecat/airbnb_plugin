@@ -33,7 +33,6 @@ use Plugins\Features\BaseFeature;
 use Utils\Contribution\SetContributionRequest;
 use Utils\Engines\MMT;
 use Utils\LQA\QA;
-use Model\FeaturesBase\Hook\Event\Filter\PrepareNotesForRenderingEvent;
 
 
 class Airbnb extends BaseFeature
@@ -42,23 +41,19 @@ class Airbnb extends BaseFeature
     const string FEATURE_CODE = "airbnb";
     const string DELIVERY_COOKIE_PREFIX = 'airbnb_session_';
 
+    /**
+     * @var array<int, string>
+     */
     public static array $dependencies = [
         FeatureCodes::TRANSLATION_VERSIONS,
         FeatureCodes::REVIEW_EXTENDED
     ];
 
-    public static function loadRoutes(Klein $klein)
+    public static function loadRoutes(Klein $klein): void
     {
     }
 
-    /**
-     * @param             $_segment_metadata array
-     * @param ProjectStructure $projectStructure
-     *
-     * @return array
-     * @see \Model\ProjectCreation\ProjectManager::storeSegments()
-     */
-    public function appendFieldToAnalysisObject(AppendFieldToAnalysisObjectEvent $event): void
+        public function appendFieldToAnalysisObject(AppendFieldToAnalysisObjectEvent $event): void
     {
         $_segment_metadata = $event->getMetadata();
         $projectStructure = $event->getProjectStructure();
@@ -76,17 +71,7 @@ class Airbnb extends BaseFeature
         $event->setMetadata($_segment_metadata);
     }
 
-    /**
-     * @param array $parameters
-     *
-     * @param array $original_config
-     *
-     * @return array
-     * @see Airbnb::appendFieldToAnalysisObject()
-     *
-     * @see \Utils\Engines\MyMemory::get()
-     */
-    public function filterMyMemoryGetParameters(FilterMyMemoryGetParametersEvent $event): void
+        public function filterMyMemoryGetParameters(FilterMyMemoryGetParametersEvent $event): void
     {
         $parameters = $event->getParameters();
         $original_config = $event->getConfig();
@@ -131,13 +116,7 @@ class Airbnb extends BaseFeature
         $event->setEmails($emails);
     }
 
-    /**
-     * @param object $segmentsList SegmentStruct[]
-     * @param array $postInput
-     *
-     * @see \Controller\API\App\SetTranslationController
-     */
-    public function rewriteContributionContexts(RewriteContributionContextsEvent $event): void
+        public function rewriteContributionContexts(RewriteContributionContextsEvent $event): void
     {
         $segmentsList = $event->getSegmentsList();
         $postInput = $event->getRequestData();
@@ -160,12 +139,7 @@ class Airbnb extends BaseFeature
         $event->setSegmentsList($segmentsList);
     }
 
-    /**
-     * @param ProjectUrls $formatted
-     *
-     * @return ProjectUrls
-     */
-    public function projectUrls(ProjectUrlsEvent $event): void
+        public function projectUrls(ProjectUrlsEvent $event): void
     {
         $event->setFormatted($event->getFormatted());
     }
@@ -180,15 +154,11 @@ class Airbnb extends BaseFeature
     /**
      * Check tag positions
      * -------------------------------------------------
-     * NOTE 28/02/2023
+     * This function stops the _checkTagPositions() and let our code to check positions
      * -------------------------------------------------
-     * This function returns a boolean to be used in the main QA class,
-     * indicating that _checkTagPositions() function should continue or not
+     * returning true  or false means that _checkTagPositions() function should NOT check for tags inside || or || separator
+     * returning null means that _checkTagPositions() function should continue or not
      *
-     * @param int $errorType
-     * @param QA $QA
-     *
-     * @return bool
      */
     public function checkTagPositions(CheckTagPositionsEvent $event): void
     {
@@ -198,6 +168,9 @@ class Airbnb extends BaseFeature
         }
 
         $sourceSplittedByPipeSep = preg_split('/<ph id="mtc_[0-9]{0,10}" ctype="x-smart-count" equiv-text="base64:fHx8fA=="\/>/', $QA->getSourceSeg());
+        if ($sourceSplittedByPipeSep === false) {
+            return;
+        }
         $sourceSplittedByPipeSepCount = count($sourceSplittedByPipeSep);
 
         // No smart count pipes, continue with _checkTagPositions()
@@ -207,8 +180,11 @@ class Airbnb extends BaseFeature
 
         // Smart count check tag position
         $targetSplittedByPipeSep = preg_split('/<ph id="mtc_[0-9]{0,10}" ctype="x-smart-count" equiv-text="base64:fHx8fA=="\/>/', $QA->getTargetSeg());
+        if ($targetSplittedByPipeSep === false) {
+            return;
+        }
         $targetSplittedByPipeSepCount = count($targetSplittedByPipeSep);
-        $targetPluralFormsCount = Pluralization::getCountFromLang($QA->getTargetSegLang());
+        $targetPluralFormsCount = Pluralization::getCountFromLang($QA->getTargetSegLang() ?? '');
 
         // if $targetSplittedByPipeSepCount !== $targetPluralFormsCount an error will be thrown
         // by the checkTagMismatch() function, so we don't care about it
@@ -251,10 +227,6 @@ class Airbnb extends BaseFeature
      *
      * No error will be produced.
      *
-     * @param int $errorType
-     * @param QA $QA
-     *
-     * @return int
      */
     public function checkTagMismatch(CheckTagMismatchEvent $event): void
     {
@@ -272,7 +244,7 @@ class Airbnb extends BaseFeature
             // ----------------------------------------------------------------
             //
             $targetSeparatorCount = substr_count($QA->getTargetSeg(), "equiv-text=\"base64:fHx8fA==\"");
-            $targetPluralFormsCount = Pluralization::getCountFromLang($QA->getTargetSegLang());
+            $targetPluralFormsCount = Pluralization::getCountFromLang($QA->getTargetSegLang() ?? '');
 
             if ((1 + $targetSeparatorCount) !== $targetPluralFormsCount) {
                 $QA->addCustomError([
@@ -346,6 +318,9 @@ class Airbnb extends BaseFeature
             //
             $sourceTagMap = [];
             $sourceSplittedByPipeSep = preg_split('/<ph id="mtc_[0-9]{0,10}" ctype="x-smart-count" equiv-text="base64:fHx8fA=="\/>/', $QA->getSourceSeg());
+            if ($sourceSplittedByPipeSep === false) {
+                return;
+            }
 
             foreach ($sourceSplittedByPipeSep as $item) {
                 preg_match_all('/equiv-text="base64:[a-zA-Z0-9=]{1,}/', $item, $itemSegMatch);
@@ -361,6 +336,9 @@ class Airbnb extends BaseFeature
 
             $targetTagMap = [];
             $targetSplittedByPipeSep = preg_split('/<ph id="mtc_[0-9]{0,10}" ctype="x-smart-count" equiv-text="base64:fHx8fA=="\/>/', $QA->getTargetSeg());
+            if ($targetSplittedByPipeSep === false) {
+                return;
+            }
 
             foreach ($targetSplittedByPipeSep as $item) {
                 //preg_match_all( '/<ph id ?= ?[\'"]mtc_[0-9]{1,9}?[\'"] equiv-text="base64:[a-zA-Z0-9=]{1,}"\/>/', $item, $itemSegMatch );
@@ -368,22 +346,10 @@ class Airbnb extends BaseFeature
                 $targetTagMap[] = $itemSegMatch[0];
             }
 
-            // PHP 8.* throws a fatal error if sort() argument is null
-            if ($expectedTargetTagMap[0] !== null) {
-                sort($expectedTargetTagMap[0]);
-            }
-
-            if ($expectedTargetTagMap[1] !== null) {
-                sort($expectedTargetTagMap[1]);
-            }
-
-            if ($targetTagMap[0] !== null) {
-                sort($targetTagMap[0]);
-            }
-
-            if ($targetTagMap[1] !== null) {
-                sort($targetTagMap[1]);
-            }
+            sort($expectedTargetTagMap[0]);
+            sort($expectedTargetTagMap[1]);
+            sort($targetTagMap[0]);
+            sort($targetTagMap[1]);
 
             $smartCountErrors = 0;
             $tagOrderErrors = 0;
@@ -434,7 +400,7 @@ class Airbnb extends BaseFeature
         $event->setErrorCode($errorCode);
     }
 
-    public function analysisBeforeMTGetContribution(AnalysisBeforeMTGetContributionEvent $event): void
+        public function analysisBeforeMTGetContribution(AnalysisBeforeMTGetContributionEvent $event): void
     {
         $engine = $event->getMtEngine();
         $config = $event->getConfig();
@@ -450,9 +416,6 @@ class Airbnb extends BaseFeature
     /**
      * Count CJK and emoji as 1 character, so mb_strlen is enough. ( baseLength )
      *
-     * @param string $string
-     *
-     * @return array
      */
     public function characterLengthCount(CharacterLengthCountEvent $event): void
     {

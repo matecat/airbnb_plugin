@@ -7,12 +7,7 @@ use Model\DataAccess\Database;
 
 class SegmentDeliveryDao extends AbstractDao {
 
-    /**
-     * @param $id_job
-     *
-     * @return bool
-     */
-    public static function isAJobDeliverable( $id_job ) {
+    public static function isAJobDeliverable( int $id_job ): bool {
         $conn = Database::obtain()->getConnection();
         $sql  = "SELECT id FROM segment_translations JOIN
             segment_notes on segment_notes.id_segment = segment_translations.id_segment 
