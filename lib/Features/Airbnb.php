@@ -8,7 +8,6 @@
 
 namespace Features;
 
-use ArrayObject;
 use Exception;
 use Features\Airbnb\Utils\SmartCount\Pluralization;
 use Klein\Klein;
@@ -18,6 +17,7 @@ use Matecat\SubFiltering\Filters\SmartCounts;
 use Matecat\SubFiltering\MateCatFilter;
 use Model\FeaturesBase\FeatureCodes;
 use Model\Jobs\JobStruct;
+use Model\ProjectCreation\ProjectStructure;
 use Model\Segments\SegmentStruct;
 use Model\Translations\SegmentTranslationStruct;
 use Model\Users\UserStruct;
@@ -30,94 +30,87 @@ use Utils\TaskRunner\Commons\QueueElement;
 use View\API\V2\Json\ProjectUrls;
 
 
-class Airbnb extends BaseFeature {
+class Airbnb extends BaseFeature
+{
 
     const string FEATURE_CODE = "airbnb";
-
-    protected static $service_types = [ 'standard', 'priority' ];
-
     const string DELIVERY_COOKIE_PREFIX = 'airbnb_session_';
 
     public static array $dependencies = [
-            FeatureCodes::TRANSLATION_VERSIONS,
-            FeatureCodes::REVIEW_EXTENDED
+        FeatureCodes::TRANSLATION_VERSIONS,
+        FeatureCodes::REVIEW_EXTENDED
     ];
 
-    public static function loadRoutes( Klein $klein ) {
+    public static function loadRoutes(Klein $klein)
+    {
     }
 
     /**
      * @param             $_segment_metadata array
-     * @param ArrayObject $projectStructure
+     * @param ProjectStructure $projectStructure
      *
      * @return array
-     * @see \Model\ProjectManager\ProjectManager::storeSegments()
+     * @see \Model\ProjectCreation\ProjectManager::storeSegments()
      */
-    public function appendFieldToAnalysisObject( $_segment_metadata, ArrayObject $projectStructure ) {
-
-        if ( $projectStructure[ 'notes' ]->offsetExists( $_segment_metadata[ 'internal_id' ] ) ) {
-
-            foreach ( $projectStructure[ 'notes' ][ $_segment_metadata[ 'internal_id' ] ][ 'entries' ] as $k => $entry ) {
-
-                if ( strpos( $entry, 'phrase_key|¶|' ) !== false ) {
-                    $_segment_metadata[ 'additional_params' ][ 'spice' ] = md5( str_replace( 'phrase_key|¶|', '', $entry ) . $_segment_metadata[ 'segment' ] );
-                } elseif ( strpos( $entry, 'translation_context|¶|' ) !== false ) {
-                    $_segment_metadata[ 'additional_params' ][ 'spice' ] = md5( str_replace( 'translation_context|¶|', '', $entry ) . $_segment_metadata[ 'segment' ] );
+    public function appendFieldToAnalysisObject(array $_segment_metadata, ProjectStructure $projectStructure): array
+    {
+        if (isset($projectStructure->notes[$_segment_metadata['internal_id']])) {
+            foreach ($projectStructure->notes[$_segment_metadata['internal_id']]['entries'] as $k => $entry) {
+                if (str_contains($entry, 'phrase_key|¶|')) {
+                    $_segment_metadata['additional_params']['spice'] = md5(str_replace('phrase_key|¶|', '', $entry) . $_segment_metadata['segment']);
+                } elseif (str_contains($entry, 'translation_context|¶|')) {
+                    $_segment_metadata['additional_params']['spice'] = md5(str_replace('translation_context|¶|', '', $entry) . $_segment_metadata['segment']);
                 }
-
             }
-
         }
 
         return $_segment_metadata;
-
     }
 
     /**
-     * @param $parameters
+     * @param array $parameters
      *
-     * @param $original_config
+     * @param array $original_config
      *
-     * @return mixed
+     * @return array
      * @see Airbnb::appendFieldToAnalysisObject()
      *
      * @see \Utils\Engines\MyMemory::get()
      */
-    public function filterMyMemoryGetParameters( $parameters, $original_config ) {
-
+    public function filterMyMemoryGetParameters(array $parameters, array $original_config): array
+    {
         /*
          * From analysis we will have additional params and spice field
          */
-        if ( isset( $original_config[ 'additional_params' ][ 'spice' ] ) ) {
-            $parameters[ 'context_before' ] = $original_config[ 'additional_params' ][ 'spice' ];
-            $parameters[ 'context_after' ]  = null;
+        if (isset($original_config['additional_params']['spice'])) {
+            $parameters['context_before'] = $original_config['additional_params']['spice'];
+            $parameters['context_after'] = null;
         }
 
-        $parameters[ 'cid' ] = Airbnb::FEATURE_CODE;
+        $parameters['cid'] = Airbnb::FEATURE_CODE;
 
         return $parameters;
-
     }
 
     /**
      * @throws Exception
      */
-    public function filterRevisionChangeNotificationList( $emails ) {
+    public function filterRevisionChangeNotificationList(array $emails): array
+    {
         // TODO: add custom email recipients here
         $config = self::getConfig();
 
-        if ( isset( $config[ 'revision_change_notification_recipients' ] ) ) {
-            foreach ( $config[ 'revision_change_notification_recipients' ] as $recipient ) {
-                [ $firstName, $lastName, $email ] = explode( ',', $recipient );
+        if (isset($config['revision_change_notification_recipients'])) {
+            foreach ($config['revision_change_notification_recipients'] as $recipient) {
+                [$firstName, $lastName, $email] = explode(',', $recipient);
                 $emails[] = [
-                        'recipient'              => new UserStruct( [
-                                'email'      => $email,
-                                'first_name' => $firstName,
-                                'last_name'  => $lastName
-                        ] ),
-                        'isPreviousChangeAuthor' => false
+                    'recipient' => new UserStruct([
+                        'email' => $email,
+                        'first_name' => $firstName,
+                        'last_name' => $lastName
+                    ]),
+                    'isPreviousChangeAuthor' => false
                 ];
-
             }
         }
 
@@ -125,30 +118,27 @@ class Airbnb extends BaseFeature {
     }
 
     /**
-     * @param $segmentsList SegmentStruct[]
-     * @param $postInput
+     * @param object $segmentsList SegmentStruct[]
+     * @param array $postInput
      *
-     * @see \getContributionController::doAction()
-     * @see \setTranslationController
-     *
+     * @see \Controller\API\App\SetTranslationController
      */
-    public function rewriteContributionContexts( $segmentsList, $postInput ) {
-
-        if ( !is_object( $segmentsList->id_before ) ) {
+    public function rewriteContributionContexts(object $segmentsList, array $postInput): void
+    {
+        if (!is_object($segmentsList->id_before)) {
             $segmentsList->id_before = new SegmentStruct();
         }
 
-        if ( strpos( $postInput[ 'context_before' ], 'phrase_key|¶|' ) !== false ) {
+        if (str_contains($postInput['context_before'], 'phrase_key|¶|')) {
             // old school ( backward compatibility )
-            $segmentsList->id_before->segment = md5( str_replace( 'phrase_key|¶|', '', $postInput[ 'context_before' ] ) . $segmentsList->id_segment->segment );
+            $segmentsList->id_before->segment = md5(str_replace('phrase_key|¶|', '', $postInput['context_before']) . $segmentsList->id_segment->segment);
         } else {
-            $segmentsList->id_before->segment = md5( str_replace( 'translation_context|¶|', '', $postInput[ 'context_before' ] ) . $segmentsList->id_segment->segment );
+            $segmentsList->id_before->segment = md5(str_replace('translation_context|¶|', '', $postInput['context_before']) . $segmentsList->id_segment->segment);
         }
 
         $segmentsList->id_after = null;
 
         $segmentsList->isSpice = true;
-
     }
 
     /**
@@ -156,12 +146,14 @@ class Airbnb extends BaseFeature {
      *
      * @return ProjectUrls
      */
-    public static function projectUrls( ProjectUrls $formatted ) {
+    public static function projectUrls(ProjectUrls $formatted): ProjectUrls
+    {
         return $formatted;
     }
 
-    public function fromLayer0ToLayer1( Pipeline $channel ) {
-        $channel->addAfter( RubyOnRailsI18n::class, SmartCounts::class );
+    public function fromLayer0ToLayer1(Pipeline $channel): Pipeline
+    {
+        $channel->addAfter(RubyOnRailsI18n::class, SmartCounts::class);
 
         return $channel;
     }
@@ -174,39 +166,39 @@ class Airbnb extends BaseFeature {
      * This function returns a boolean to be used in the main QA class,
      * indicating that _checkTagPositions() function should continue or not
      *
-     * @param               $errorType
-     * @param QA            $QA
+     * @param int $errorType
+     * @param QA $QA
      *
      * @return bool
      */
-    public function checkTagPositions( $errorType, QA $QA ) {
-        $sourceSplittedByPipeSep      = preg_split( '/<ph id="mtc_[0-9]{0,10}" ctype="x-smart-count" equiv-text="base64:fHx8fA=="\/>/', $QA->getSourceSeg() );
-        $sourceSplittedByPipeSepCount = count( $sourceSplittedByPipeSep );
+    public function checkTagPositions(int $errorType, QA $QA): bool
+    {
+        $sourceSplittedByPipeSep = preg_split('/<ph id="mtc_[0-9]{0,10}" ctype="x-smart-count" equiv-text="base64:fHx8fA=="\/>/', $QA->getSourceSeg());
+        $sourceSplittedByPipeSepCount = count($sourceSplittedByPipeSep);
 
         // No smart count pipes, continue with _checkTagPositions()
-        if ( $sourceSplittedByPipeSepCount === 1 ) {
+        if ($sourceSplittedByPipeSepCount === 1) {
             return false;
         }
 
         // Smart count check tag position
-        $targetSplittedByPipeSep      = preg_split( '/<ph id="mtc_[0-9]{0,10}" ctype="x-smart-count" equiv-text="base64:fHx8fA=="\/>/', $QA->getTargetSeg() );
-        $targetSplittedByPipeSepCount = count( $targetSplittedByPipeSep );
-        $targetPluralFormsCount       = Pluralization::getCountFromLang( $QA->getTargetSegLang() );
+        $targetSplittedByPipeSep = preg_split('/<ph id="mtc_[0-9]{0,10}" ctype="x-smart-count" equiv-text="base64:fHx8fA=="\/>/', $QA->getTargetSeg());
+        $targetSplittedByPipeSepCount = count($targetSplittedByPipeSep);
+        $targetPluralFormsCount = Pluralization::getCountFromLang($QA->getTargetSegLang());
 
         // if $targetSplittedByPipeSepCount !== $targetPluralFormsCount an error will be thrown
         // by the checkTagMismatch() function, so we don't care about it
-        if ( $targetSplittedByPipeSepCount === $targetPluralFormsCount ) {
-
+        if ($targetSplittedByPipeSepCount === $targetPluralFormsCount) {
             // perform strict checks only with language with 2 plural forms
-            $performIdCheck           = $targetPluralFormsCount === 2;
+            $performIdCheck = $targetPluralFormsCount === 2;
             $performTagPositionsCheck = $targetPluralFormsCount === 2;
 
-            $QA->performTagPositionCheck( $sourceSplittedByPipeSep[ 0 ], $targetSplittedByPipeSep[ 0 ], $performIdCheck, $performTagPositionsCheck );
+            $QA->performTagPositionCheck($sourceSplittedByPipeSep[0], $targetSplittedByPipeSep[0], $performIdCheck, $performTagPositionsCheck);
 
-            unset( $targetSplittedByPipeSep[ 0 ] );
+            unset($targetSplittedByPipeSep[0]);
 
-            foreach ( $targetSplittedByPipeSep as $targetSplitted ) {
-                $QA->performTagPositionCheck( $sourceSplittedByPipeSep[ 1 ], $targetSplitted, $performIdCheck, $performTagPositionsCheck );
+            foreach ($targetSplittedByPipeSep as $targetSplitted) {
+                $QA->performTagPositionCheck($sourceSplittedByPipeSep[1], $targetSplitted, $performIdCheck, $performTagPositionsCheck);
             }
         }
 
@@ -235,30 +227,29 @@ class Airbnb extends BaseFeature {
      *
      * No error will be produced.
      *
-     * @param               $errorType
-     * @param QA            $QA
+     * @param int $errorType
+     * @param QA $QA
      *
      * @return int
      */
-    public function checkTagMismatch( $errorType, QA $QA ) {
-
+    public function checkTagMismatch(int $errorType, QA $QA): int
+    {
         //check for smart count separator |||| in source segment ( base64 encoded "||||" === "fHx8fA==" )
-        if ( strpos( $QA->getSourceSeg(), "equiv-text=\"base64:fHx8fA==\"" ) !== false ) {
-
+        if (str_contains($QA->getSourceSeg(), "equiv-text=\"base64:fHx8fA==\"")) {
             //
             // ----------------------------------------------------------------
             // 1. check for |||| count correspondence
             // ----------------------------------------------------------------
             //
-            $targetSeparatorCount   = substr_count( $QA->getTargetSeg(), "equiv-text=\"base64:fHx8fA==\"" );
-            $targetPluralFormsCount = Pluralization::getCountFromLang( $QA->getTargetSegLang() );
+            $targetSeparatorCount = substr_count($QA->getTargetSeg(), "equiv-text=\"base64:fHx8fA==\"");
+            $targetPluralFormsCount = Pluralization::getCountFromLang($QA->getTargetSegLang());
 
-            if ( ( 1 + $targetSeparatorCount ) !== $targetPluralFormsCount ) {
-                $QA->addCustomError( [
-                        'code'  => QA::SMART_COUNT_PLURAL_MISMATCH,
-                        'debug' => 'Smart Count rules not compliant with target language',
-                        'tip'   => 'Check your language specific configuration.'
-                ] );
+            if ((1 + $targetSeparatorCount) !== $targetPluralFormsCount) {
+                $QA->addCustomError([
+                    'code' => QA::SMART_COUNT_PLURAL_MISMATCH,
+                    'debug' => 'Smart Count rules not compliant with target language',
+                    'tip' => 'Check your language specific configuration.'
+                ]);
 
                 return QA::SMART_COUNT_PLURAL_MISMATCH;
             }
@@ -322,88 +313,86 @@ class Airbnb extends BaseFeature {
             //
             // Finally, the target tag map is compared to $expectedTargetTagMap
             //
-            $sourceTagMap            = [];
-            $sourceSplittedByPipeSep = preg_split( '/<ph id="mtc_[0-9]{0,10}" ctype="x-smart-count" equiv-text="base64:fHx8fA=="\/>/', $QA->getSourceSeg() );
+            $sourceTagMap = [];
+            $sourceSplittedByPipeSep = preg_split('/<ph id="mtc_[0-9]{0,10}" ctype="x-smart-count" equiv-text="base64:fHx8fA=="\/>/', $QA->getSourceSeg());
 
-            foreach ( $sourceSplittedByPipeSep as $item ) {
-                preg_match_all( '/equiv-text="base64:[a-zA-Z0-9=]{1,}/', $item, $itemSegMatch );
+            foreach ($sourceSplittedByPipeSep as $item) {
+                preg_match_all('/equiv-text="base64:[a-zA-Z0-9=]{1,}/', $item, $itemSegMatch);
                 //preg_match_all( '/<ph id ?= ?[\'"]mtc_[0-9]{1,9}?[\'"] equiv-text="base64:[a-zA-Z0-9=]{1,}"\/>/', $item, $itemSegMatch );
-                $sourceTagMap[] = $itemSegMatch[ 0 ];
+                $sourceTagMap[] = $itemSegMatch[0];
             }
 
-            $expectedTargetTagMap[] = $sourceTagMap[ 0 ];
+            $expectedTargetTagMap[] = $sourceTagMap[0];
 
-            for ( $i = 1; $i < $targetPluralFormsCount; $i++ ) {
-                $expectedTargetTagMap[] = $sourceTagMap[ 1 ];
+            for ($i = 1; $i < $targetPluralFormsCount; $i++) {
+                $expectedTargetTagMap[] = $sourceTagMap[1];
             }
 
-            $targetTagMap            = [];
-            $targetSplittedByPipeSep = preg_split( '/<ph id="mtc_[0-9]{0,10}" ctype="x-smart-count" equiv-text="base64:fHx8fA=="\/>/', $QA->getTargetSeg() );
+            $targetTagMap = [];
+            $targetSplittedByPipeSep = preg_split('/<ph id="mtc_[0-9]{0,10}" ctype="x-smart-count" equiv-text="base64:fHx8fA=="\/>/', $QA->getTargetSeg());
 
-            foreach ( $targetSplittedByPipeSep as $item ) {
+            foreach ($targetSplittedByPipeSep as $item) {
                 //preg_match_all( '/<ph id ?= ?[\'"]mtc_[0-9]{1,9}?[\'"] equiv-text="base64:[a-zA-Z0-9=]{1,}"\/>/', $item, $itemSegMatch );
-                preg_match_all( '/equiv-text="base64:[a-zA-Z0-9=]{1,}/', $item, $itemSegMatch );
-                $targetTagMap[] = $itemSegMatch[ 0 ];
+                preg_match_all('/equiv-text="base64:[a-zA-Z0-9=]{1,}/', $item, $itemSegMatch);
+                $targetTagMap[] = $itemSegMatch[0];
             }
 
             // PHP 8.* throws a fatal error if sort() argument is null
-            if($expectedTargetTagMap[ 0 ] !== null){
-                sort( $expectedTargetTagMap[ 0 ] );
+            if ($expectedTargetTagMap[0] !== null) {
+                sort($expectedTargetTagMap[0]);
             }
 
-            if($expectedTargetTagMap[ 1 ] !== null){
-                sort( $expectedTargetTagMap[ 1 ] );
+            if ($expectedTargetTagMap[1] !== null) {
+                sort($expectedTargetTagMap[1]);
             }
 
-            if($targetTagMap[ 0 ] !== null){
-                sort( $targetTagMap[ 0 ] );
+            if ($targetTagMap[0] !== null) {
+                sort($targetTagMap[0]);
             }
 
-            if($targetTagMap[ 1 ] !== null){
-                sort( $targetTagMap[ 1 ] );
+            if ($targetTagMap[1] !== null) {
+                sort($targetTagMap[1]);
             }
 
             $smartCountErrors = 0;
-            $tagOrderErrors   = 0;
+            $tagOrderErrors = 0;
 
-            foreach ( $expectedTargetTagMap as $index => $expectedTargetTags ) {
+            foreach ($expectedTargetTagMap as $index => $expectedTargetTags) {
+                $currentTargetTagMap = $targetTagMap[$index];
 
-                $currentTargetTagMap = $targetTagMap[ $index ];
+                $check = array_diff($currentTargetTagMap, $expectedTargetTags);
+                $check2 = array_diff($expectedTargetTags, $currentTargetTagMap);
 
-                $check  = array_diff( $currentTargetTagMap, $expectedTargetTags );
-                $check2 = array_diff( $expectedTargetTags, $currentTargetTagMap );
-
-                if ( !empty( $check ) or !empty( $check2 ) ) {
+                if (!empty($check) or !empty($check2)) {
                     $smartCountErrors++;
-
                 }
 
-                if ( $currentTargetTagMap !== $expectedTargetTags ) {
+                if ($currentTargetTagMap !== $expectedTargetTags) {
                     $tagOrderErrors++;
                 }
             }
 
             // If there is at least ONE smart count mismatch, return an error
-            if ( $smartCountErrors > 0 ) {
-                $QA->addCustomError( [
-                        'code'  => QA::SMART_COUNT_MISMATCH,
-                        'debug' => '%{smart_count} tag count mismatch',
-                        'tip'   => 'Check the count of %{smart_count} tags in the source.'
-                ] );
+            if ($smartCountErrors > 0) {
+                $QA->addCustomError([
+                    'code' => QA::SMART_COUNT_MISMATCH,
+                    'debug' => '%{smart_count} tag count mismatch',
+                    'tip' => 'Check the count of %{smart_count} tags in the source.'
+                ]);
 
                 return QA::SMART_COUNT_MISMATCH;
             }
 
             // Otherwise, consider if there is at least tag order mismatch, return a warning
-            if ( $tagOrderErrors > 0 ) {
-                $QA->addError( QA::ERR_TAG_ORDER );
+            if ($tagOrderErrors > 0) {
+                $QA->addError(QA::ERR_TAG_ORDER);
 
                 return QA::ERR_TAG_ORDER;
             }
 
-            $QA->addCustomError( [
-                    'code' => 0,
-            ] );
+            $QA->addCustomError([
+                'code' => 0,
+            ]);
 
             return 0;
         }
@@ -411,10 +400,11 @@ class Airbnb extends BaseFeature {
         return $errorType;
     }
 
-    public static function analysisBeforeMTGetContribution( $config, AbstractEngine $engine, QueueElement $queueElement ) {
-        if ( $engine instanceof MMT ) {
+    public static function analysisBeforeMTGetContribution(array $config, AbstractEngine $engine, QueueElement $queueElement): array
+    {
+        if ($engine instanceof MMT) {
             //tell to the MMT that this is the analysis phase ( override default configuration )
-            $engine->setAnalysis( false );
+            $engine->setAnalysis(false);
         }
 
         return $config;
@@ -423,18 +413,17 @@ class Airbnb extends BaseFeature {
     /**
      * Count CJK and emoji as 1 character, so mb_strlen is enough. ( baseLength )
      *
-     * @param $string
+     * @param string $string
      *
      * @return array
      */
-    public function characterLengthCount( $string ) {
-
+    public function characterLengthCount(string $string): array
+    {
         return [
-                "baseLength"   => mb_strlen( $string ),
-                "cjkMatches"   => 0,
-                "emojiMatches" => 0,
+            "baseLength" => mb_strlen($string),
+            "cjkMatches" => 0,
+            "emojiMatches" => 0,
         ];
-
     }
 
     /**
