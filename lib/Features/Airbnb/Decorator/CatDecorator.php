@@ -6,28 +6,44 @@ namespace Features\Airbnb\Decorator;
 use Controller\Abstracts\Authentication\CookieManager;
 use Controller\Views\TemplateDecorator\AbstractDecorator;
 use Controller\Views\TemplateDecorator\Arguments\ArgumentInterface;
+use Controller\Views\TemplateDecorator\Arguments\CatDecoratorArguments;
+use DomainException;
 use Features\Airbnb;
 use Features\Airbnb\Model\SegmentDelivery\SegmentDeliveryDao;
+use RuntimeException;
+use TypeError;
+use UnexpectedValueException;
 use Utils\Registry\AppConfig;
 use Utils\Tools\SimpleJWT;
 
 class CatDecorator extends AbstractDecorator {
 
-    private ?ArgumentInterface $arguments;
+    private CatDecoratorArguments $arguments;
 
+    /**
+     * @throws RuntimeException
+     * @throws DomainException
+     * @throws TypeError
+     * @throws UnexpectedValueException
+     */
     public function decorate(?ArgumentInterface $arguments = null): void
     {
+        if (!$arguments instanceof CatDecoratorArguments) {
+            throw new RuntimeException('CatDecorator requires CatDecoratorArguments, got: ' . get_debug_type($arguments));
+        }
+
         $this->arguments = $arguments;
         $this->_checkSessionCookie();
         $this->assignCatDecorator();
     }
 
+    /**
+     * @throws DomainException
+     * @throws TypeError
+     * @throws UnexpectedValueException
+     */
     protected function _checkSessionCookie(): void
     {
-        if ($this->arguments === null) {
-            return;
-        }
-
         $chunk = $this->arguments->getJob();
 
         if ( !isset( $_COOKIE[ Airbnb::DELIVERY_COOKIE_PREFIX . $chunk->id ] ) ) {
@@ -63,32 +79,21 @@ class CatDecorator extends AbstractDecorator {
         );
     }
 
-
-    /**
-     * Empty method because it's not necessary to do again what is written into the parent
-     */
     protected function decorateForRevision(): void {
     }
 
-    /**
-     * @return void
-     */
     protected function assignCatDecorator(): void
     {
-        if ( $this->arguments !== null && $this->arguments->isRevision() ) {
+        if ( $this->arguments->isRevision() ) {
             $this->decorateForRevision();
         } else {
             $this->decorateForTranslate();
         }
     }
 
-    /**
-     * @return void
-     */
     protected function decorateForTranslate(): void
     {
-        /** @phpstan-ignore property.notFound (dynamic PHPTAL template variable) */
-        $this->template->{'footer_show_revise_link'} = false;
+        $this->template->footer_show_revise_link = false;
     }
 
 }
