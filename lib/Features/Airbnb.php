@@ -18,7 +18,7 @@ use Matecat\SubFiltering\MateCatFilter;
 use Model\FeaturesBase\FeatureCodes;
 use Model\FeaturesBase\Hook\Event\Filter\AnalysisBeforeMTGetContributionEvent;
 use Model\FeaturesBase\Hook\Event\Filter\AppendFieldToAnalysisObjectEvent;
-use Model\FeaturesBase\Hook\Event\Filter\FromLayer0ToLayer1Event;
+use Matecat\SubFiltering\Events\FromLayer0ToLayer1Event;
 use Model\FeaturesBase\Hook\Event\Filter\CharacterLengthCountEvent;
 use Model\FeaturesBase\Hook\Event\Filter\CheckTagMismatchEvent;
 use Model\FeaturesBase\Hook\Event\Filter\CheckTagPositionsEvent;
@@ -147,7 +147,7 @@ class Airbnb extends BaseFeature
 
     public function fromLayer0ToLayer1(FromLayer0ToLayer1Event $event): void
     {
-        $event->getChannel()->addAfter(RubyOnRailsI18n::class, SmartCounts::class);
+        $event->getPipeline()->addAfter(RubyOnRailsI18n::class, SmartCounts::class);
     }
 
     /**
