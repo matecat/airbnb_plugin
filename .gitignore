@@ -1,3 +1,5 @@
+.*
+!.gitignore
 # IDE stuffs
 .settings
 .idea
