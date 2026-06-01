@@ -10,6 +10,7 @@ use Controller\Views\TemplateDecorator\Arguments\CatDecoratorArguments;
 use DomainException;
 use Features\Airbnb;
 use Features\Airbnb\Model\SegmentDelivery\SegmentDeliveryDao;
+use PDOException;
 use RuntimeException;
 use TypeError;
 use UnexpectedValueException;
@@ -23,6 +24,7 @@ class CatDecorator extends AbstractDecorator {
     /**
      * @throws RuntimeException
      * @throws DomainException
+     * @throws PDOException
      * @throws TypeError
      * @throws UnexpectedValueException
      */
@@ -39,6 +41,7 @@ class CatDecorator extends AbstractDecorator {
 
     /**
      * @throws DomainException
+     * @throws PDOException
      * @throws TypeError
      * @throws UnexpectedValueException
      */

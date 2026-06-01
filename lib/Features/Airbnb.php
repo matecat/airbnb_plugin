@@ -11,26 +11,25 @@ namespace Features;
 use Exception;
 use Features\Airbnb\Utils\SmartCount\Pluralization;
 use Klein\Klein;
-use Matecat\SubFiltering\Commons\Pipeline;
+use Matecat\SubFiltering\Events\FromLayer0ToLayer1Event;
 use Matecat\SubFiltering\Filters\RubyOnRailsI18n;
 use Matecat\SubFiltering\Filters\SmartCounts;
-use Matecat\SubFiltering\MateCatFilter;
 use Model\FeaturesBase\FeatureCodes;
 use Model\FeaturesBase\Hook\Event\Filter\AnalysisBeforeMTGetContributionEvent;
 use Model\FeaturesBase\Hook\Event\Filter\AppendFieldToAnalysisObjectEvent;
-use Matecat\SubFiltering\Events\FromLayer0ToLayer1Event;
 use Model\FeaturesBase\Hook\Event\Filter\CharacterLengthCountEvent;
 use Model\FeaturesBase\Hook\Event\Filter\CheckTagMismatchEvent;
 use Model\FeaturesBase\Hook\Event\Filter\CheckTagPositionsEvent;
+use Model\FeaturesBase\Hook\Event\Filter\FilterContributionStructOnMTSetEvent;
 use Model\FeaturesBase\Hook\Event\Filter\FilterMyMemoryGetParametersEvent;
 use Model\FeaturesBase\Hook\Event\Filter\FilterRevisionChangeNotificationListEvent;
-use Model\FeaturesBase\Hook\Event\Filter\FilterContributionStructOnMTSetEvent;
 use Model\FeaturesBase\Hook\Event\Filter\ProjectUrlsEvent;
 use Model\FeaturesBase\Hook\Event\Filter\RewriteContributionContextsEvent;
 use Model\Jobs\JobStruct;
 use Model\Segments\SegmentStruct;
 use Model\Users\UserStruct;
 use Plugins\Features\BaseFeature;
+use TypeError;
 use Utils\Contribution\SetContributionRequest;
 use Utils\Engines\MMT;
 use Utils\LQA\QA;
@@ -54,7 +53,7 @@ class Airbnb extends BaseFeature
     {
     }
 
-        public function appendFieldToAnalysisObject(AppendFieldToAnalysisObjectEvent $event): void
+    public function appendFieldToAnalysisObject(AppendFieldToAnalysisObjectEvent $event): void
     {
         $_segment_metadata = $event->getMetadata();
         $projectStructure = $event->getProjectStructure();
@@ -72,7 +71,7 @@ class Airbnb extends BaseFeature
         $event->setMetadata($_segment_metadata);
     }
 
-        public function filterMyMemoryGetParameters(FilterMyMemoryGetParametersEvent $event): void
+    public function filterMyMemoryGetParameters(FilterMyMemoryGetParametersEvent $event): void
     {
         $parameters = $event->getParameters();
         $original_config = $event->getConfig();
@@ -117,20 +116,23 @@ class Airbnb extends BaseFeature
         $event->setEmails($emails);
     }
 
-        public function rewriteContributionContexts(RewriteContributionContextsEvent $event): void
+    public function rewriteContributionContexts(RewriteContributionContextsEvent $event): void
     {
         $segmentsList = $event->getSegmentsList();
         $postInput = $event->getRequestData();
 
-        if (!is_object($segmentsList->id_before)) {
+        if (!$segmentsList->id_before instanceof SegmentStruct) {
             $segmentsList->id_before = new SegmentStruct();
         }
 
+        $idSegment = $segmentsList->id_segment;
+        $sourceSegment = $idSegment instanceof SegmentStruct ? $idSegment->segment : '';
+
         if (str_contains($postInput['context_before'], 'phrase_key|¶|')) {
             // old school ( backward compatibility )
-            $segmentsList->id_before->segment = md5(str_replace('phrase_key|¶|', '', $postInput['context_before']) . $segmentsList->id_segment->segment);
+            $segmentsList->id_before->segment = md5(str_replace('phrase_key|¶|', '', $postInput['context_before']) . $sourceSegment);
         } else {
-            $segmentsList->id_before->segment = md5(str_replace('translation_context|¶|', '', $postInput['context_before']) . $segmentsList->id_segment->segment);
+            $segmentsList->id_before->segment = md5(str_replace('translation_context|¶|', '', $postInput['context_before']) . $sourceSegment);
         }
 
         $segmentsList->id_after = null;
@@ -140,7 +142,7 @@ class Airbnb extends BaseFeature
         $event->setSegmentsList($segmentsList);
     }
 
-        public function projectUrls(ProjectUrlsEvent $event): void
+    public function projectUrls(ProjectUrlsEvent $event): void
     {
         $event->setFormatted($event->getFormatted());
     }
@@ -399,7 +401,7 @@ class Airbnb extends BaseFeature
         $event->setErrorCode($errorCode);
     }
 
-        public function analysisBeforeMTGetContribution(AnalysisBeforeMTGetContributionEvent $event): void
+    public function analysisBeforeMTGetContribution(AnalysisBeforeMTGetContributionEvent $event): void
     {
         $engine = $event->getMtEngine();
         $config = $event->getConfig();
@@ -432,6 +434,7 @@ class Airbnb extends BaseFeature
 
     /**
      * @throws Exception
+     * @throws TypeError
      */
     public function filterContributionStructOnMTSet(FilterContributionStructOnMTSetEvent $event): void
     {
