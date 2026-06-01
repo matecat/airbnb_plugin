@@ -97,7 +97,7 @@ class Airbnb extends BaseFeature
         $emails = $event->getEmails();
 
         // TODO: add custom email recipients here
-        $config = self::getConfig();
+        $config = $this->getConfig();
 
         if (isset($config['revision_change_notification_recipients'])) {
             foreach ($config['revision_change_notification_recipients'] as $recipient) {
