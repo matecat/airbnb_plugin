@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace unit\Features;
+namespace Matecat\Plugins\Airbnb\Features;
 
 use Features\Airbnb;
 use Matecat\SubFiltering\AbstractFilter;
@@ -10,6 +10,7 @@ use Matecat\SubFiltering\Commons\Pipeline;
 use Matecat\SubFiltering\Events\FromLayer0ToLayer1Event;
 use Matecat\SubFiltering\Filters\RubyOnRailsI18n;
 use Matecat\SubFiltering\Filters\SmartCounts;
+use Matecat\TestHelpers\AbstractTest;
 use Model\FeaturesBase\BasicFeatureStruct;
 use Model\FeaturesBase\Hook\Event\Filter\AnalysisBeforeMTGetContributionEvent;
 use Model\FeaturesBase\Hook\Event\Filter\AppendFieldToAnalysisObjectEvent;
@@ -23,9 +24,8 @@ use Model\FeaturesBase\Hook\Event\Filter\RewriteContributionContextsEvent;
 use Model\Jobs\JobStruct;
 use Model\ProjectCreation\ProjectStructure;
 use Model\Segments\SegmentStruct;
-use Model\Users\UserStruct;
 use PHPUnit\Framework\Attributes\Test;
-use TestHelpers\AbstractTest;
+use stdClass;
 use Utils\Contribution\SetContributionRequest;
 use Utils\Engines\MMT;
 use Utils\LQA\QA;
@@ -229,7 +229,7 @@ class AirbnbTest extends AbstractTest
     #[Test]
     public function analysisBeforeMTGetContribution_nonMmtEngine_doesNotCallSetAnalysis(): void
     {
-        $engine = new \stdClass();
+        $engine = new stdClass();
 
         $event = new AnalysisBeforeMTGetContributionEvent(
             ['key' => 'val'],
@@ -253,10 +253,10 @@ class AirbnbTest extends AbstractTest
         $idSegment = new SegmentStruct();
         $idSegment->segment = 'source text';
 
-        $segmentsList = new \stdClass();
+        $segmentsList = new stdClass();
         $segmentsList->id_before = null;
         $segmentsList->id_segment = $idSegment;
-        $segmentsList->id_after = new \stdClass();
+        $segmentsList->id_after = new stdClass();
         $segmentsList->isSpice = false;
 
         $event = new RewriteContributionContextsEvent(
@@ -297,7 +297,7 @@ class AirbnbTest extends AbstractTest
     #[Test]
     public function checkTagPositions_notQAInstance_earlyReturn(): void
     {
-        $event = new CheckTagPositionsEvent(false, new \stdClass());
+        $event = new CheckTagPositionsEvent(false, new stdClass());
 
         $this->airbnb->checkTagPositions($event);
 
@@ -436,7 +436,7 @@ class AirbnbTest extends AbstractTest
     #[Test]
     public function checkTagMismatch_notQAInstance_earlyReturn(): void
     {
-        $event = new CheckTagMismatchEvent(42, new \stdClass());
+        $event = new CheckTagMismatchEvent(42, new stdClass());
 
         $this->airbnb->checkTagMismatch($event);
 
@@ -471,10 +471,10 @@ class AirbnbTest extends AbstractTest
         ];
         $contributionRequest = new SetContributionRequest($contributionData);
 
-        $segment = new \stdClass();
+        $segment = new stdClass();
         $segment->segment = 'original source';
 
-        $translation = new \stdClass();
+        $translation = new stdClass();
         $translation->translation = 'original translation';
 
         $filter = $this->createStub(AbstractFilter::class);

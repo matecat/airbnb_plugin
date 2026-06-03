@@ -1,11 +1,11 @@
 <?php
 
-namespace unit;
+namespace Matecat\Plugins\Airbnb;
 
 use Features\Airbnb\Utils\SmartCount\Pluralization;
+use Matecat\TestHelpers\AbstractTest;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Test;
-use TestHelpers\AbstractTest;
 
 class PluralizationTest extends AbstractTest
 {

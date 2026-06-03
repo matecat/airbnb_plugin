@@ -1,0 +1,12 @@
+{
+    "autoload": {
+        "psr-4": {
+            "Features\\": "lib/Features"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Matecat\\Plugins\\Airbnb\\": "tests/unit"
+        }
+    }
+}
