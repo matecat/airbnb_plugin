@@ -11,23 +11,28 @@ namespace Features;
 use Exception;
 use Features\Airbnb\Utils\SmartCount\Pluralization;
 use Klein\Klein;
-use Matecat\SubFiltering\Commons\Pipeline;
+use Matecat\SubFiltering\Events\FromLayer0ToLayer1Event;
 use Matecat\SubFiltering\Filters\RubyOnRailsI18n;
 use Matecat\SubFiltering\Filters\SmartCounts;
-use Matecat\SubFiltering\MateCatFilter;
 use Model\FeaturesBase\FeatureCodes;
+use Model\FeaturesBase\Hook\Event\Filter\AnalysisBeforeMTGetContributionEvent;
+use Model\FeaturesBase\Hook\Event\Filter\AppendFieldToAnalysisObjectEvent;
+use Model\FeaturesBase\Hook\Event\Filter\CharacterLengthCountEvent;
+use Model\FeaturesBase\Hook\Event\Filter\CheckTagMismatchEvent;
+use Model\FeaturesBase\Hook\Event\Filter\CheckTagPositionsEvent;
+use Model\FeaturesBase\Hook\Event\Filter\FilterContributionStructOnMTSetEvent;
+use Model\FeaturesBase\Hook\Event\Filter\FilterMyMemoryGetParametersEvent;
+use Model\FeaturesBase\Hook\Event\Filter\FilterRevisionChangeNotificationListEvent;
+use Model\FeaturesBase\Hook\Event\Filter\ProjectUrlsEvent;
+use Model\FeaturesBase\Hook\Event\Filter\RewriteContributionContextsEvent;
 use Model\Jobs\JobStruct;
-use Model\ProjectCreation\ProjectStructure;
 use Model\Segments\SegmentStruct;
-use Model\Translations\SegmentTranslationStruct;
 use Model\Users\UserStruct;
 use Plugins\Features\BaseFeature;
+use TypeError;
 use Utils\Contribution\SetContributionRequest;
-use Utils\Engines\AbstractEngine;
 use Utils\Engines\MMT;
 use Utils\LQA\QA;
-use Utils\TaskRunner\Commons\QueueElement;
-use View\API\V2\Json\ProjectUrls;
 
 
 class Airbnb extends BaseFeature
@@ -36,26 +41,25 @@ class Airbnb extends BaseFeature
     const string FEATURE_CODE = "airbnb";
     const string DELIVERY_COOKIE_PREFIX = 'airbnb_session_';
 
+    /**
+     * @var array<int, string>
+     */
     public static array $dependencies = [
         FeatureCodes::TRANSLATION_VERSIONS,
         FeatureCodes::REVIEW_EXTENDED
     ];
 
-    public static function loadRoutes(Klein $klein)
+    public static function loadRoutes(Klein $klein): void
     {
     }
 
-    /**
-     * @param             $_segment_metadata array
-     * @param ProjectStructure $projectStructure
-     *
-     * @return array
-     * @see \Model\ProjectCreation\ProjectManager::storeSegments()
-     */
-    public function appendFieldToAnalysisObject(array $_segment_metadata, ProjectStructure $projectStructure): array
+    public function appendFieldToAnalysisObject(AppendFieldToAnalysisObjectEvent $event): void
     {
+        $_segment_metadata = $event->getMetadata();
+        $projectStructure = $event->getProjectStructure();
+
         if (isset($projectStructure->notes[$_segment_metadata['internal_id']])) {
-            foreach ($projectStructure->notes[$_segment_metadata['internal_id']]['entries'] as $k => $entry) {
+            foreach ($projectStructure->notes[$_segment_metadata['internal_id']]['entries'] as $entry) {
                 if (str_contains($entry, 'phrase_key|¶|')) {
                     $_segment_metadata['additional_params']['spice'] = md5(str_replace('phrase_key|¶|', '', $entry) . $_segment_metadata['segment']);
                 } elseif (str_contains($entry, 'translation_context|¶|')) {
@@ -64,21 +68,14 @@ class Airbnb extends BaseFeature
             }
         }
 
-        return $_segment_metadata;
+        $event->setMetadata($_segment_metadata);
     }
 
-    /**
-     * @param array $parameters
-     *
-     * @param array $original_config
-     *
-     * @return array
-     * @see Airbnb::appendFieldToAnalysisObject()
-     *
-     * @see \Utils\Engines\MyMemory::get()
-     */
-    public function filterMyMemoryGetParameters(array $parameters, array $original_config): array
+    public function filterMyMemoryGetParameters(FilterMyMemoryGetParametersEvent $event): void
     {
+        $parameters = $event->getParameters();
+        $original_config = $event->getConfig();
+
         /*
          * From analysis we will have additional params and spice field
          */
@@ -89,16 +86,18 @@ class Airbnb extends BaseFeature
 
         $parameters['cid'] = Airbnb::FEATURE_CODE;
 
-        return $parameters;
+        $event->setParameters($parameters);
     }
 
     /**
      * @throws Exception
      */
-    public function filterRevisionChangeNotificationList(array $emails): array
+    public function filterRevisionChangeNotificationList(FilterRevisionChangeNotificationListEvent $event): void
     {
+        $emails = $event->getEmails();
+
         // TODO: add custom email recipients here
-        $config = self::getConfig();
+        $config = $this->getConfig();
 
         if (isset($config['revision_change_notification_recipients'])) {
             foreach ($config['revision_change_notification_recipients'] as $recipient) {
@@ -114,77 +113,79 @@ class Airbnb extends BaseFeature
             }
         }
 
-        return $emails;
+        $event->setEmails($emails);
     }
 
-    /**
-     * @param object $segmentsList SegmentStruct[]
-     * @param array $postInput
-     *
-     * @see \Controller\API\App\SetTranslationController
-     */
-    public function rewriteContributionContexts(object $segmentsList, array $postInput): void
+    public function rewriteContributionContexts(RewriteContributionContextsEvent $event): void
     {
-        if (!is_object($segmentsList->id_before)) {
+        $segmentsList = $event->getSegmentsList();
+        $postInput = $event->getRequestData();
+
+        if (!$segmentsList->id_before instanceof SegmentStruct) {
             $segmentsList->id_before = new SegmentStruct();
         }
 
+        $idSegment = $segmentsList->id_segment;
+        $sourceSegment = $idSegment instanceof SegmentStruct ? $idSegment->segment : '';
+
         if (str_contains($postInput['context_before'], 'phrase_key|¶|')) {
             // old school ( backward compatibility )
-            $segmentsList->id_before->segment = md5(str_replace('phrase_key|¶|', '', $postInput['context_before']) . $segmentsList->id_segment->segment);
+            $segmentsList->id_before->segment = md5(str_replace('phrase_key|¶|', '', $postInput['context_before']) . $sourceSegment);
         } else {
-            $segmentsList->id_before->segment = md5(str_replace('translation_context|¶|', '', $postInput['context_before']) . $segmentsList->id_segment->segment);
+            $segmentsList->id_before->segment = md5(str_replace('translation_context|¶|', '', $postInput['context_before']) . $sourceSegment);
         }
 
         $segmentsList->id_after = null;
 
         $segmentsList->isSpice = true;
+
+        $event->setSegmentsList($segmentsList);
     }
 
-    /**
-     * @param ProjectUrls $formatted
-     *
-     * @return ProjectUrls
-     */
-    public static function projectUrls(ProjectUrls $formatted): ProjectUrls
+    public function projectUrls(ProjectUrlsEvent $event): void
     {
-        return $formatted;
+        $event->setFormatted($event->getFormatted());
     }
 
-    public function fromLayer0ToLayer1(Pipeline $channel): Pipeline
+    public function fromLayer0ToLayer1(FromLayer0ToLayer1Event $event): void
     {
-        $channel->addAfter(RubyOnRailsI18n::class, SmartCounts::class);
-
-        return $channel;
+        $event->getPipeline()->addAfter(RubyOnRailsI18n::class, SmartCounts::class);
     }
 
     /**
      * Check tag positions
      * -------------------------------------------------
-     * NOTE 28/02/2023
+     * This function stops the _checkTagPositions() and let our code to check positions
      * -------------------------------------------------
-     * This function returns a boolean to be used in the main QA class,
-     * indicating that _checkTagPositions() function should continue or not
+     * returning true  or false means that _checkTagPositions() function should NOT check for tags inside || or || separator
+     * returning null means that _checkTagPositions() function should continue or not
      *
-     * @param int $errorType
-     * @param QA $QA
-     *
-     * @return bool
      */
-    public function checkTagPositions(int $errorType, QA $QA): bool
+    public function checkTagPositions(CheckTagPositionsEvent $event): void
     {
+        $QA = $event->getQaInstance();
+        if (!$QA instanceof QA) {
+            return;
+        }
+
         $sourceSplittedByPipeSep = preg_split('/<ph id="mtc_[0-9]{0,10}" ctype="x-smart-count" equiv-text="base64:fHx8fA=="\/>/', $QA->getSourceSeg());
+        if ($sourceSplittedByPipeSep === false) {
+            return;
+        }
         $sourceSplittedByPipeSepCount = count($sourceSplittedByPipeSep);
 
         // No smart count pipes, continue with _checkTagPositions()
         if ($sourceSplittedByPipeSepCount === 1) {
-            return false;
+            return;
         }
 
         // Smart count check tag position
         $targetSplittedByPipeSep = preg_split('/<ph id="mtc_[0-9]{0,10}" ctype="x-smart-count" equiv-text="base64:fHx8fA=="\/>/', $QA->getTargetSeg());
+        if ($targetSplittedByPipeSep === false) {
+            return;
+        }
         $targetSplittedByPipeSepCount = count($targetSplittedByPipeSep);
-        $targetPluralFormsCount = Pluralization::getCountFromLang($QA->getTargetSegLang());
+        $targetPluralFormsCount = Pluralization::getCountFromLang($QA->getTargetSegLang() ?? '');
 
         // if $targetSplittedByPipeSepCount !== $targetPluralFormsCount an error will be thrown
         // by the checkTagMismatch() function, so we don't care about it
@@ -202,7 +203,7 @@ class Airbnb extends BaseFeature
             }
         }
 
-        return true;
+        $event->setErrorCode(true);
     }
 
     /**
@@ -227,13 +228,15 @@ class Airbnb extends BaseFeature
      *
      * No error will be produced.
      *
-     * @param int $errorType
-     * @param QA $QA
-     *
-     * @return int
      */
-    public function checkTagMismatch(int $errorType, QA $QA): int
+    public function checkTagMismatch(CheckTagMismatchEvent $event): void
     {
+        $errorCode = $event->getErrorCode();
+        $QA = $event->getQaInstance();
+        if (!$QA instanceof QA) {
+            return;
+        }
+
         //check for smart count separator |||| in source segment ( base64 encoded "||||" === "fHx8fA==" )
         if (str_contains($QA->getSourceSeg(), "equiv-text=\"base64:fHx8fA==\"")) {
             //
@@ -242,7 +245,7 @@ class Airbnb extends BaseFeature
             // ----------------------------------------------------------------
             //
             $targetSeparatorCount = substr_count($QA->getTargetSeg(), "equiv-text=\"base64:fHx8fA==\"");
-            $targetPluralFormsCount = Pluralization::getCountFromLang($QA->getTargetSegLang());
+            $targetPluralFormsCount = Pluralization::getCountFromLang($QA->getTargetSegLang() ?? '');
 
             if ((1 + $targetSeparatorCount) !== $targetPluralFormsCount) {
                 $QA->addCustomError([
@@ -251,7 +254,8 @@ class Airbnb extends BaseFeature
                     'tip' => 'Check your language specific configuration.'
                 ]);
 
-                return QA::SMART_COUNT_PLURAL_MISMATCH;
+                $event->setErrorCode(QA::SMART_COUNT_PLURAL_MISMATCH);
+                return;
             }
 
             //
@@ -315,6 +319,9 @@ class Airbnb extends BaseFeature
             //
             $sourceTagMap = [];
             $sourceSplittedByPipeSep = preg_split('/<ph id="mtc_[0-9]{0,10}" ctype="x-smart-count" equiv-text="base64:fHx8fA=="\/>/', $QA->getSourceSeg());
+            if ($sourceSplittedByPipeSep === false) {
+                return;
+            }
 
             foreach ($sourceSplittedByPipeSep as $item) {
                 preg_match_all('/equiv-text="base64:[a-zA-Z0-9=]{1,}/', $item, $itemSegMatch);
@@ -330,6 +337,9 @@ class Airbnb extends BaseFeature
 
             $targetTagMap = [];
             $targetSplittedByPipeSep = preg_split('/<ph id="mtc_[0-9]{0,10}" ctype="x-smart-count" equiv-text="base64:fHx8fA=="\/>/', $QA->getTargetSeg());
+            if ($targetSplittedByPipeSep === false) {
+                return;
+            }
 
             foreach ($targetSplittedByPipeSep as $item) {
                 //preg_match_all( '/<ph id ?= ?[\'"]mtc_[0-9]{1,9}?[\'"] equiv-text="base64:[a-zA-Z0-9=]{1,}"\/>/', $item, $itemSegMatch );
@@ -337,22 +347,10 @@ class Airbnb extends BaseFeature
                 $targetTagMap[] = $itemSegMatch[0];
             }
 
-            // PHP 8.* throws a fatal error if sort() argument is null
-            if ($expectedTargetTagMap[0] !== null) {
-                sort($expectedTargetTagMap[0]);
-            }
-
-            if ($expectedTargetTagMap[1] !== null) {
-                sort($expectedTargetTagMap[1]);
-            }
-
-            if ($targetTagMap[0] !== null) {
-                sort($targetTagMap[0]);
-            }
-
-            if ($targetTagMap[1] !== null) {
-                sort($targetTagMap[1]);
-            }
+            sort($expectedTargetTagMap[0]);
+            sort($expectedTargetTagMap[1]);
+            sort($targetTagMap[0]);
+            sort($targetTagMap[1]);
 
             $smartCountErrors = 0;
             $tagOrderErrors = 0;
@@ -380,61 +378,71 @@ class Airbnb extends BaseFeature
                     'tip' => 'Check the count of %{smart_count} tags in the source.'
                 ]);
 
-                return QA::SMART_COUNT_MISMATCH;
+                $event->setErrorCode(QA::SMART_COUNT_MISMATCH);
+                return;
             }
 
             // Otherwise, consider if there is at least tag order mismatch, return a warning
             if ($tagOrderErrors > 0) {
                 $QA->addError(QA::ERR_TAG_ORDER);
 
-                return QA::ERR_TAG_ORDER;
+                $event->setErrorCode(QA::ERR_TAG_ORDER);
+                return;
             }
 
             $QA->addCustomError([
                 'code' => 0,
             ]);
 
-            return 0;
+            $event->setErrorCode(0);
+            return;
         }
 
-        return $errorType;
+        $event->setErrorCode($errorCode);
     }
 
-    public static function analysisBeforeMTGetContribution(array $config, AbstractEngine $engine, QueueElement $queueElement): array
+    public function analysisBeforeMTGetContribution(AnalysisBeforeMTGetContributionEvent $event): void
     {
+        $engine = $event->getMtEngine();
+        $config = $event->getConfig();
+
         if ($engine instanceof MMT) {
             //tell to the MMT that this is the analysis phase ( override default configuration )
             $engine->setAnalysis(false);
         }
 
-        return $config;
+        $event->setConfig($config);
     }
 
     /**
      * Count CJK and emoji as 1 character, so mb_strlen is enough. ( baseLength )
      *
-     * @param string $string
-     *
-     * @return array
      */
-    public function characterLengthCount(string $string): array
+    public function characterLengthCount(CharacterLengthCountEvent $event): void
     {
-        return [
+        $string = $event->getFilterable();
+        if (!is_string($string)) {
+            return;
+        }
+
+        $event->setFilterable([
             "baseLength" => mb_strlen($string),
             "cjkMatches" => 0,
             "emojiMatches" => 0,
-        ];
+        ]);
     }
 
     /**
      * @throws Exception
+     * @throws TypeError
      */
-    public function filterContributionStructOnMTSet(
-        SetContributionRequest $contributionRequest,
-        SegmentTranslationStruct $segmentTranslationStruct,
-        SegmentStruct $originalSourceSegment,
-        MateCatFilter $filter
-    ): SetContributionRequest {
+    public function filterContributionStructOnMTSet(FilterContributionStructOnMTSetEvent $event): void
+    {
+        $contributionRequest = $event->getContributionStruct();
+        $segmentTranslationStruct = $event->getTranslation();
+        $originalSourceSegment = $event->getSegment();
+        $filter = $event->getFilter();
+
         $array = $contributionRequest->toArray();
         $array['jobStruct'] = new JobStruct($array['jobStruct']);
         $newContribution = new SetContributionRequest($array);
@@ -443,7 +451,7 @@ class Airbnb extends BaseFeature
         $newContribution->context_after = $filter->fromLayer1ToLayer0($contributionRequest->context_after);
         $newContribution->context_before = $filter->fromLayer1ToLayer0($contributionRequest->context_before);
 
-        return $newContribution;
+        $event->setContributionStruct($newContribution);
     }
 
 }

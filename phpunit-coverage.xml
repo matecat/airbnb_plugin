@@ -1,0 +1,22 @@
+<?xml version="1.0"?>
+<phpunit xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:noNamespaceSchemaLocation="https://schema.phpunit.de/12.4/phpunit.xsd"
+         bootstrap="../../tests/test_helper.php"
+         colors="true">
+
+    <source>
+        <include>
+            <directory suffix=".php">./lib</directory>
+        </include>
+    </source>
+    <coverage pathCoverage="false" ignoreDeprecatedCodeUnits="true"/>
+
+    <php>
+        <includePath>../../tests/TestHelpers</includePath>
+    </php>
+    <testsuites>
+        <testsuite name="Airbnb Plugin">
+            <directory>./tests/unit</directory>
+        </testsuite>
+    </testsuites>
+</phpunit>

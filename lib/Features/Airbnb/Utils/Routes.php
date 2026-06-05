@@ -18,9 +18,10 @@ class Routes {
 
 
     /**
+     * @param array<string, mixed> $options
      * @throws Exception
      */
-    public static function staticSrc( $file, $options = [] ): string {
+    public static function staticSrc( string $file, array $options = [] ): string {
         $path = PluginsLoader::getPluginDirectoryName( Airbnb::FEATURE_CODE );
         $host = CanonicalRoutes::pluginsBase( $options );
 
@@ -28,9 +29,10 @@ class Routes {
     }
 
     /**
+     * @param array<string, mixed> $options
      * @throws Exception
      */
-    public static function staticBuild( $file, $options = [] ): string {
+    public static function staticBuild( string $file, array $options = [] ): string {
         $path = PluginsLoader::getPluginDirectoryName( Airbnb::FEATURE_CODE );
         $host = CanonicalRoutes::pluginsBase( $options );
 
