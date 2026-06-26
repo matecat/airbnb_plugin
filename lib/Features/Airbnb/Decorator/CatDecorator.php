@@ -60,7 +60,7 @@ class CatDecorator extends AbstractDecorator {
         )->getPayload();
 
         if ( $payload[ 'id_job' ] == $chunk->id ) {
-            $isAJobDeliverable = SegmentDeliveryDao::isAJobDeliverable( $payload[ 'id_job' ] );
+            $isAJobDeliverable = SegmentDeliveryDao::isAJobDeliverable( $payload[ 'id_job' ], $this->controller->getDatabase() );
             $this->template->append( 'config_js', [
                     'airbnb_ontool'      => $payload[ 'ontool' ],
                     'airbnb_auth_token'  => $cookie,
