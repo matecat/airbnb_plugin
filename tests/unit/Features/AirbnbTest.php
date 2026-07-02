@@ -434,6 +434,53 @@ class AirbnbTest extends AbstractTest
     }
 
     #[Test]
+    public function checkTagMismatch_singlePluralFormLanguage_correctTags_returnsZero(): void
+    {
+        $smartCountTag = '<ph id="mtc_1" ctype="x-smart-count" equiv-text="base64:fHx8fA=="/>';
+        $nameTag = '<ph id="mtc_2" equiv-text="base64:JXtmaXJzdF9uYW1lfQ=="/>';
+
+        // Source (en-US): 2 forms, each containing the name tag.
+        $source = $nameTag . ' has 1 hour' . $smartCountTag . $nameTag . ' has %{count} hours';
+        // Target (zh-CN): 1 plural form only (no smart count separator), same name tag.
+        $target = $nameTag . ' 有 %{count} 小时';
+
+        $qa = $this->createStub(QA::class);
+        $qa->method('getSourceSeg')->willReturn($source);
+        $qa->method('getTargetSeg')->willReturn($target);
+        $qa->method('getTargetSegLang')->willReturn('zh-CN'); // 1 plural form
+
+        $event = new CheckTagMismatchEvent(0, $qa);
+
+        $this->airbnb->checkTagMismatch($event);
+
+        self::assertSame(0, $event->getErrorCode());
+    }
+
+    #[Test]
+    public function checkTagMismatch_singlePluralFormLanguage_tagMismatch_returnsError2001(): void
+    {
+        $smartCountTag = '<ph id="mtc_1" ctype="x-smart-count" equiv-text="base64:fHx8fA=="/>';
+        $nameTag = '<ph id="mtc_2" equiv-text="base64:JXtmaXJzdF9uYW1lfQ=="/>';
+
+        // Source (en-US): 2 forms, each containing the name tag.
+        $source = $nameTag . ' has 1 hour' . $smartCountTag . $nameTag . ' has %{count} hours';
+        // Target (zh-CN): 1 plural form, but missing the name tag.
+        $target = 'has %{count} hours';
+
+        $qa = $this->createMock(QA::class);
+        $qa->method('getSourceSeg')->willReturn($source);
+        $qa->method('getTargetSeg')->willReturn($target);
+        $qa->method('getTargetSegLang')->willReturn('zh-CN'); // 1 plural form
+        $qa->expects(self::once())->method('addCustomError');
+
+        $event = new CheckTagMismatchEvent(0, $qa);
+
+        $this->airbnb->checkTagMismatch($event);
+
+        self::assertSame(QA::SMART_COUNT_MISMATCH, $event->getErrorCode());
+    }
+
+    #[Test]
     public function checkTagMismatch_notQAInstance_earlyReturn(): void
     {
         $event = new CheckTagMismatchEvent(42, new stdClass());
