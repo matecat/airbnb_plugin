@@ -347,15 +347,15 @@ class Airbnb extends BaseFeature
                 $targetTagMap[] = $itemSegMatch[0];
             }
 
-            foreach ($expectedTargetTagMap as &$tags) {
+            foreach ($expectedTargetTagMap as $i => $tags) {
                 sort($tags);
+                $expectedTargetTagMap[$i] = $tags;
             }
-            unset($tags);
 
-            foreach ($targetTagMap as &$tags) {
+            foreach ($targetTagMap as $i => $tags) {
                 sort($tags);
+                $targetTagMap[$i] = $tags;
             }
-            unset($tags);
 
             $smartCountErrors = 0;
             $tagOrderErrors = 0;
