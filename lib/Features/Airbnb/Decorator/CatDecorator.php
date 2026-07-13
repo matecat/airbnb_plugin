@@ -68,18 +68,7 @@ class CatDecorator extends AbstractDecorator {
             ] );
         }
 
-        unset( $_COOKIE[ Airbnb::DELIVERY_COOKIE_PREFIX . $chunk->id ] );
-        CookieManager::setCookie( Airbnb::DELIVERY_COOKIE_PREFIX . $chunk->id,
-                '',
-                [
-                        'expires'  => strtotime( '-20 minutes' ),
-                        'path'     => '/',
-                        'domain'   => AppConfig::$COOKIE_DOMAIN,
-                        'secure'   => true,
-                        'httponly' => true,
-                        'samesite' => 'None',
-                ]
-        );
+        (new CookieManager())->delete(Airbnb::DELIVERY_COOKIE_PREFIX . $chunk->id);
     }
 
     protected function decorateForRevision(): void {
