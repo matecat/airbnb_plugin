@@ -10,28 +10,22 @@ namespace Features;
 
 use Exception;
 use Features\Airbnb\Utils\SmartCount\Pluralization;
-use Klein\Klein;
 use Matecat\SubFiltering\Events\FromLayer0ToLayer1Event;
 use Matecat\SubFiltering\Filters\RubyOnRailsI18n;
 use Matecat\SubFiltering\Filters\SmartCounts;
 use Model\FeaturesBase\FeatureCodes;
-use Model\FeaturesBase\Hook\Event\Filter\AnalysisBeforeMTGetContributionEvent;
 use Model\FeaturesBase\Hook\Event\Filter\AppendFieldToAnalysisObjectEvent;
 use Model\FeaturesBase\Hook\Event\Filter\CharacterLengthCountEvent;
 use Model\FeaturesBase\Hook\Event\Filter\CheckTagMismatchEvent;
 use Model\FeaturesBase\Hook\Event\Filter\CheckTagPositionsEvent;
 use Model\FeaturesBase\Hook\Event\Filter\FilterContributionStructOnMTSetEvent;
 use Model\FeaturesBase\Hook\Event\Filter\FilterMyMemoryGetParametersEvent;
-use Model\FeaturesBase\Hook\Event\Filter\FilterRevisionChangeNotificationListEvent;
-use Model\FeaturesBase\Hook\Event\Filter\ProjectUrlsEvent;
 use Model\FeaturesBase\Hook\Event\Filter\RewriteContributionContextsEvent;
 use Model\Jobs\JobStruct;
 use Model\Segments\SegmentStruct;
-use Model\Users\UserStruct;
 use Plugins\Features\BaseFeature;
 use TypeError;
 use Utils\Contribution\SetContributionRequest;
-use Utils\Engines\MMT;
 use Utils\LQA\QA;
 
 
@@ -47,10 +41,6 @@ class Airbnb extends BaseFeature
         FeatureCodes::TRANSLATION_VERSIONS,
         FeatureCodes::REVIEW_EXTENDED
     ];
-
-    public static function loadRoutes(Klein $klein): void
-    {
-    }
 
     public function appendFieldToAnalysisObject(AppendFieldToAnalysisObjectEvent $event): void
     {
@@ -88,33 +78,6 @@ class Airbnb extends BaseFeature
         $event->setParameters($parameters);
     }
 
-    /**
-     * @throws Exception
-     */
-    public function filterRevisionChangeNotificationList(FilterRevisionChangeNotificationListEvent $event): void
-    {
-        $emails = $event->getEmails();
-
-        // TODO: add custom email recipients here
-        $config = $this->getConfig();
-
-        if (isset($config['revision_change_notification_recipients'])) {
-            foreach ($config['revision_change_notification_recipients'] as $recipient) {
-                [$firstName, $lastName, $email] = explode(',', $recipient);
-                $emails[] = [
-                    'recipient' => new UserStruct([
-                        'email' => $email,
-                        'first_name' => $firstName,
-                        'last_name' => $lastName
-                    ]),
-                    'isPreviousChangeAuthor' => false
-                ];
-            }
-        }
-
-        $event->setEmails($emails);
-    }
-
     public function rewriteContributionContexts(RewriteContributionContextsEvent $event): void
     {
         $segmentsList = $event->getSegmentsList();
@@ -139,11 +102,6 @@ class Airbnb extends BaseFeature
         $segmentsList->isSpice = true;
 
         $event->setSegmentsList($segmentsList);
-    }
-
-    public function projectUrls(ProjectUrlsEvent $event): void
-    {
-        $event->setFormatted($event->getFormatted());
     }
 
     public function fromLayer0ToLayer1(FromLayer0ToLayer1Event $event): void
@@ -403,19 +361,6 @@ class Airbnb extends BaseFeature
         }
 
         $event->setErrorCode($errorCode);
-    }
-
-    public function analysisBeforeMTGetContribution(AnalysisBeforeMTGetContributionEvent $event): void
-    {
-        $engine = $event->getMtEngine();
-        $config = $event->getConfig();
-
-        if ($engine instanceof MMT) {
-            //tell to the MMT that this is the analysis phase ( override default configuration )
-            $engine->setAnalysis(false);
-        }
-
-        $event->setConfig($config);
     }
 
     /**
