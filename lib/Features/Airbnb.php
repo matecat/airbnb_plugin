@@ -39,7 +39,6 @@ class Airbnb extends BaseFeature
 {
 
     const string FEATURE_CODE = "airbnb";
-    const string DELIVERY_COOKIE_PREFIX = 'airbnb_session_';
 
     /**
      * @var array<int, string>
