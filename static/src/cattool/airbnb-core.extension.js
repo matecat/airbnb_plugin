@@ -118,11 +118,11 @@ const init = () => {
       }
       if (this.props.segmentSource.indexOf('"base64:fHx8fA=="') > -1) {
         //base64 of pipes "||||", now they are in tag form
-        let targetPrefix = config.target_rfc.split('-')[0]
+        let targetPrefix = config.target_code.split('-')[0]
         let langLike
         //Search the dialect
         forOwn(PLURAL_TYPE_NAME_TO_LANGUAGES, function (value, key) {
-          if (value.indexOf(config.target_rfc) !== -1) {
+          if (value.indexOf(config.target_code) !== -1) {
             langLike = key
             return false
           }
