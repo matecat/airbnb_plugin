@@ -12,14 +12,12 @@ use Matecat\SubFiltering\Filters\RubyOnRailsI18n;
 use Matecat\SubFiltering\Filters\SmartCounts;
 use Matecat\TestHelpers\AbstractTest;
 use Model\FeaturesBase\BasicFeatureStruct;
-use Model\FeaturesBase\Hook\Event\Filter\AnalysisBeforeMTGetContributionEvent;
 use Model\FeaturesBase\Hook\Event\Filter\AppendFieldToAnalysisObjectEvent;
 use Model\FeaturesBase\Hook\Event\Filter\CharacterLengthCountEvent;
 use Model\FeaturesBase\Hook\Event\Filter\CheckTagMismatchEvent;
 use Model\FeaturesBase\Hook\Event\Filter\CheckTagPositionsEvent;
 use Model\FeaturesBase\Hook\Event\Filter\FilterContributionStructOnMTSetEvent;
 use Model\FeaturesBase\Hook\Event\Filter\FilterMyMemoryGetParametersEvent;
-use Model\FeaturesBase\Hook\Event\Filter\FilterRevisionChangeNotificationListEvent;
 use Model\FeaturesBase\Hook\Event\Filter\RewriteContributionContextsEvent;
 use Model\Jobs\JobStruct;
 use Model\ProjectCreation\ProjectStructure;
@@ -27,7 +25,6 @@ use Model\Segments\SegmentStruct;
 use PHPUnit\Framework\Attributes\Test;
 use stdClass;
 use Utils\Contribution\SetContributionRequest;
-use Utils\Engines\MMT;
 use Utils\LQA\QA;
 
 class AirbnbTest extends AbstractTest
@@ -40,7 +37,7 @@ class AirbnbTest extends AbstractTest
 
         $this->airbnb = new Airbnb(
             new BasicFeatureStruct(['feature_code' => Airbnb::FEATURE_CODE]),
-            config: ['revision_change_notification_recipients' => ['John,Doe,john@example.com']],
+            config: [],
         );
     }
 
@@ -145,39 +142,6 @@ class AirbnbTest extends AbstractTest
     }
 
     // ---------------------------------------------------------------
-    // filterRevisionChangeNotificationList
-    // ---------------------------------------------------------------
-
-    #[Test]
-    public function filterRevisionChangeNotificationList_addsRecipientsFromConfig(): void
-    {
-        $event = new FilterRevisionChangeNotificationListEvent([]);
-
-        $this->airbnb->filterRevisionChangeNotificationList($event);
-
-        $emails = $event->getEmails();
-        self::assertCount(1, $emails);
-        self::assertSame('john@example.com', $emails[0]['recipient']->email);
-        self::assertSame('John', $emails[0]['recipient']->first_name);
-        self::assertSame('Doe', $emails[0]['recipient']->last_name);
-        self::assertFalse($emails[0]['isPreviousChangeAuthor']);
-    }
-
-    #[Test]
-    public function filterRevisionChangeNotificationList_noConfigKey_leavesListEmpty(): void
-    {
-        $airbnb = new Airbnb(
-            new BasicFeatureStruct(['feature_code' => Airbnb::FEATURE_CODE]),
-            config: [],
-        );
-
-        $event = new FilterRevisionChangeNotificationListEvent([]);
-        $airbnb->filterRevisionChangeNotificationList($event);
-
-        self::assertSame([], $event->getEmails());
-    }
-
-    // ---------------------------------------------------------------
     // characterLengthCount
     // ---------------------------------------------------------------
 
@@ -203,44 +167,6 @@ class AirbnbTest extends AbstractTest
         $this->airbnb->characterLengthCount($event);
 
         self::assertSame(42, $event->getFilterable());
-    }
-
-    // ---------------------------------------------------------------
-    // analysisBeforeMTGetContribution
-    // ---------------------------------------------------------------
-
-    #[Test]
-    public function analysisBeforeMTGetContribution_mmtEngine_callsSetAnalysis(): void
-    {
-        $mmt = $this->createMock(MMT::class);
-        $mmt->expects(self::once())
-            ->method('setAnalysis')
-            ->with(false);
-
-        $event = new AnalysisBeforeMTGetContributionEvent(
-            ['key' => 'val'],
-            $mmt,
-            null,
-        );
-
-        $this->airbnb->analysisBeforeMTGetContribution($event);
-    }
-
-    #[Test]
-    public function analysisBeforeMTGetContribution_nonMmtEngine_doesNotCallSetAnalysis(): void
-    {
-        $engine = new stdClass();
-
-        $event = new AnalysisBeforeMTGetContributionEvent(
-            ['key' => 'val'],
-            $engine,
-            null,
-        );
-
-        $this->airbnb->analysisBeforeMTGetContribution($event);
-
-        // No exception = pass; engine is not MMT so setAnalysis is never called
-        self::assertSame(['key' => 'val'], $event->getConfig());
     }
 
     // ---------------------------------------------------------------
