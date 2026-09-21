@@ -3,12 +3,11 @@ import $ from 'jquery'
 import {isUndefined, forOwn} from 'lodash'
 import SegmentActions from '../../../../../public/js/actions/SegmentActions'
 import SegmentStore from '../../../../../public/js/stores/SegmentStore'
-import SegmentFooterTabMessages from '../../../../../public/js/components/segments/SegmentFooterTabMessages'
-import SegmentFooter from '../../../../../public/js/components/segments/SegmentFooter'
 import SegmentUtils from '../../../../../public/js/utils/segmentUtils'
-import { CatToolInterface } from '../../../../../public/js/pages/CatToolInterface'
 import { CHARS_SIZE_COUNTER_TYPES } from '../../../../../public/js/utils/charsSizeCounterUtil'
 import globalFunctions from '../../../../../public/js/globalFunctions'
+import segmentNotes from '../../../../../public/js/components/segments/segmentNotes'
+import catToolInterface from '../../../../../public/js/pages/CatToolInterface'
 // Override characters size mapping
 
 const AIRBNB_FEATURE = 'airbnb'
@@ -31,9 +30,11 @@ const init = () => {
       return false
     }
   }
-  const originalRegisterFooterTabs = globalFunctions.registerFooterTabs
+  // Add to whatever is registered at this point rather than to core's own
+  // implementation, so another plugin's tabs survive alongside these.
+  const registerPreviousFooterTabs = globalFunctions.registerFooterTabs
   globalFunctions.registerFooterTabs = function () {
-    originalRegisterFooterTabs.apply(this)
+    registerPreviousFooterTabs()
     SegmentActions.registerTab('messages', true, true)
   }
   globalFunctions.getContextBefore = function (segmentId) {
@@ -99,73 +100,65 @@ const init = () => {
     return getSegmentId(segmentAfter)
   }
 
-  function overrideTabMessages(SegmentTabMessages) {
-    const noteStructure = SegmentTabMessages.prototype.getNoteStructure
-    SegmentTabMessages.prototype.getNotes = function () {
-      let notesHtml = []
-      let self = this
-      if (this.props.notes) {
-        this.props.notes.forEach((item, index) => {
-          if (item.note && item.note !== '') {
-            if (item.note.indexOf('¶') === -1) {
-              const noteHtml = noteStructure.call(this, item, index)
-              if (noteHtml) {
-                notesHtml.push(noteHtml)
-              }
-            }
+  const buildNote = segmentNotes.getNote
+  segmentNotes.getNotes = ({notes, metadata, segment, segmentSource}) => {
+    const notesHtml = []
+    if (notes) {
+      notes.forEach((item, index) => {
+        if (item.note && item.note !== '' && item.note.indexOf('¶') === -1) {
+          const noteHtml = buildNote({item, index})
+          if (noteHtml) {
+            notesHtml.push(noteHtml)
           }
-        })
-      }
-      if (this.props.segmentSource.indexOf('"base64:fHx8fA=="') > -1) {
-        //base64 of pipes "||||", now they are in tag form
-        let targetPrefix = config.target_code.split('-')[0]
-        let langLike
-        //Search the dialect
+        }
+      })
+    }
+    if (segmentSource.indexOf('"base64:fHx8fA=="') > -1) {
+      //base64 of pipes "||||", now they are in tag form
+      let targetPrefix = config.target_code.split('-')[0]
+      let langLike
+      //Search the dialect
+      forOwn(PLURAL_TYPE_NAME_TO_LANGUAGES, function (value, key) {
+        if (value.indexOf(config.target_code) !== -1) {
+          langLike = key
+          return false
+        }
+      })
+      // In not search de prefix
+      if (!langLike) {
         forOwn(PLURAL_TYPE_NAME_TO_LANGUAGES, function (value, key) {
-          if (value.indexOf(config.target_code) !== -1) {
+          if (value.indexOf(targetPrefix) !== -1) {
             langLike = key
             return false
           }
         })
-        // In not search de prefix
-        if (!langLike) {
-          forOwn(PLURAL_TYPE_NAME_TO_LANGUAGES, function (value, key) {
-            if (value.indexOf(targetPrefix) !== -1) {
-              langLike = key
-              return false
-            }
-          })
-        }
-        if (!isUndefined(langLike) && PLURAL_TYPES[langLike]) {
-          let rules = PLURAL_TYPES[langLike]
-          let html = (
-            <div className="note" key="forms">
-              <span className="note-label">Plural forms: </span>
-              <span dangerouslySetInnerHTML={self.allowHTML(rules.num_forms)} />
-            </div>
+      }
+      if (!isUndefined(langLike) && PLURAL_TYPES[langLike]) {
+        const rules = PLURAL_TYPES[langLike]
+        notesHtml.push(
+          <div className="note" key="forms">
+            <span className="note-label">Plural forms: </span>
+            <span dangerouslySetInnerHTML={{__html: rules.num_forms}} />
+          </div>,
+        )
+        if (rules.doc && rules.doc.length) {
+          notesHtml.push(
+            <div className="note" key="rules">
+              <span className="note-label">Rules for smart count: </span>
+              <span
+                dangerouslySetInnerHTML={{__html: rules.doc.join(' |||| ')}}
+              />
+            </div>,
           )
-          notesHtml.push(html)
-          if (rules.doc && rules.doc.length) {
-            html = (
-              <div className="note" key="rules">
-                <span className="note-label">Rules for smart count: </span>
-                <span
-                  dangerouslySetInnerHTML={self.allowHTML(
-                    rules.doc.join(' |||| '),
-                  )}
-                />
-              </div>
-            )
-            notesHtml.push(html)
-          }
         }
       }
-      // metadata notes
-      if (this.props.metadata) {
-        notesHtml.push(this.getMetadataNoteTemplate())
-      }
-      return notesHtml
     }
+    // metadata notes
+    if (metadata) {
+      notesHtml.push(segmentNotes.getMetadataNotes({metadata, segment}))
+    }
+    return notesHtml
+  }
 
     var PLURAL_TYPES = {
       chinese_like: {
@@ -417,30 +410,16 @@ const init = () => {
 
       irish_like: ['ga'],
     }
+
+  const originalSegmentHasNote = SegmentUtils.segmentHasNote
+  SegmentUtils.segmentHasNote = (segment) => {
+    const hasOrginalNotes = originalSegmentHasNote(segment)
+    return hasOrginalNotes || segment.segment.indexOf('"base64:fHx8fA=="') > -1
   }
 
-  function overrideSetDefaultTabOpen(SegmentFooter) {
-    SegmentFooter.prototype.setDefaultTabOpen = function () {
-      return false
-    }
-  }
-
-  function ovverrideSegmentUtilFn(SegmentUtils) {
-    const originalFn = SegmentUtils.segmentHasNote
-    SegmentUtils.segmentHasNote = (segment) => {
-      const hasOrginalNotes = originalFn(segment)
-      return (
-        hasOrginalNotes || segment.segment.indexOf('"base64:fHx8fA=="') > -1
-      )
-    }
-  }
-
-  overrideTabMessages(SegmentFooterTabMessages)
-  overrideSetDefaultTabOpen(SegmentFooter)
-  ovverrideSegmentUtilFn(SegmentUtils)
-
-  CatToolInterface.prototype.getCharacterCounterMode = () => CHARS_SIZE_COUNTER_TYPES.EXCLUDE_CJK
+  catToolInterface.getCharacterCounterMode = () =>
+    CHARS_SIZE_COUNTER_TYPES.EXCLUDE_CJK
 }
-document.addEventListener('DOMContentLoaded', function (event) {
+document.addEventListener('DOMContentLoaded', function () {
   if (config.project_plugins.indexOf(AIRBNB_FEATURE) > -1) init()
 })

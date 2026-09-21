@@ -1,10 +1,10 @@
-import { UseProjectTemplateInterface } from "../../../../../public/js/hooks/useProjectTemplates"
 import { CHARS_SIZE_COUNTER_TYPES } from "../../../../../public/js/utils/charsSizeCounterUtil"
+import { useProjectTemplateInterface } from "../../../../../public/js/hooks/useProjectTemplates"
 
 const AIRBNB_FEATURE = 'airbnb'
 
 function init(){
-    UseProjectTemplateInterface.prototype.getCharacterCounterMode = () => CHARS_SIZE_COUNTER_TYPES.EXCLUDE_CJK
+    useProjectTemplateInterface.getCharacterCounterMode = () => CHARS_SIZE_COUNTER_TYPES.EXCLUDE_CJK
 }
 
 document.addEventListener('DOMContentLoaded', function () {
