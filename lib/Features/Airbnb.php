@@ -46,7 +46,7 @@ class Airbnb extends BaseFeature
      */
     public static array $dependencies = [
         FeatureCodes::TRANSLATION_VERSIONS,
-        FeatureCodes::REVIEW_EXTENDED
+        FeatureCodes::SECOND_PASS_REVIEW
     ];
 
     public static function loadRoutes(Klein $klein): void
