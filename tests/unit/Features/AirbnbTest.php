@@ -17,6 +17,7 @@ use Model\FeaturesBase\Hook\Event\Filter\AppendFieldToAnalysisObjectEvent;
 use Model\FeaturesBase\Hook\Event\Filter\CharacterLengthCountEvent;
 use Model\FeaturesBase\Hook\Event\Filter\CheckTagMismatchEvent;
 use Model\FeaturesBase\Hook\Event\Filter\CheckTagPositionsEvent;
+use Model\FeaturesBase\Hook\Event\Filter\ContentSecurityPolicySourcesEvent;
 use Model\FeaturesBase\Hook\Event\Filter\FilterContributionStructOnMTSetEvent;
 use Model\FeaturesBase\Hook\Event\Filter\FilterMyMemoryGetParametersEvent;
 use Model\FeaturesBase\Hook\Event\Filter\FilterRevisionChangeNotificationListEvent;
@@ -29,6 +30,7 @@ use stdClass;
 use Utils\Contribution\SetContributionRequest;
 use Utils\Engines\MMT;
 use Utils\LQA\QA;
+use Utils\Templating\CspDirective;
 
 class AirbnbTest extends AbstractTest
 {
@@ -543,5 +545,24 @@ class AirbnbTest extends AbstractTest
         self::assertSame('original translation', $result->translation);
         self::assertSame('layer0:layer1 ctx before', $result->context_before);
         self::assertSame('layer0:layer1 ctx after', $result->context_after);
+    }
+
+    // ---------------------------------------------------------------
+    // contentSecurityPolicySources
+    // ---------------------------------------------------------------
+
+    #[Test]
+    public function contentSecurityPolicySourcesAddsTheScreenshotCdnToDefaultSrcOnly(): void
+    {
+        $event = new ContentSecurityPolicySourcesEvent('context_preview.html');
+
+        $this->airbnb->contentSecurityPolicySources($event);
+
+        self::assertSame(['a0.muscache.com'], $event->getSources(CspDirective::DEFAULT_SRC));
+        foreach (CspDirective::cases() as $directive) {
+            if ($directive !== CspDirective::DEFAULT_SRC) {
+                self::assertSame([], $event->getSources($directive), $directive->value);
+            }
+        }
     }
 }
