@@ -30,7 +30,6 @@ use stdClass;
 use Utils\Contribution\SetContributionRequest;
 use Utils\Engines\MMT;
 use Utils\LQA\QA;
-use Utils\Templating\CspDirective;
 
 class AirbnbTest extends AbstractTest
 {
@@ -554,15 +553,10 @@ class AirbnbTest extends AbstractTest
     #[Test]
     public function contentSecurityPolicySourcesAddsTheScreenshotCdnToDefaultSrcOnly(): void
     {
-        $event = new ContentSecurityPolicySourcesEvent('context_preview.html');
+        $event = new ContentSecurityPolicySourcesEvent();
 
         $this->airbnb->contentSecurityPolicySources($event);
 
-        self::assertSame(['a0.muscache.com'], $event->getSources(CspDirective::DEFAULT_SRC));
-        foreach (CspDirective::cases() as $directive) {
-            if ($directive !== CspDirective::DEFAULT_SRC) {
-                self::assertSame([], $event->getSources($directive), $directive->value);
-            }
-        }
+        self::assertSame(['default-src' => 'a0.muscache.com'], $event->getSources());
     }
 }

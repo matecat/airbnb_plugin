@@ -9,7 +9,6 @@
 namespace Features;
 
 use Exception;
-use InvalidArgumentException;
 use Features\Airbnb\Utils\SmartCount\Pluralization;
 use Klein\Klein;
 use Matecat\SubFiltering\Events\FromLayer0ToLayer1Event;
@@ -35,7 +34,6 @@ use TypeError;
 use Utils\Contribution\SetContributionRequest;
 use Utils\Engines\MMT;
 use Utils\LQA\QA;
-use Utils\Templating\CspDirective;
 
 
 class Airbnb extends BaseFeature
@@ -148,12 +146,10 @@ class Airbnb extends BaseFeature
     /**
      * Airbnb serves the context screenshots from its own CDN. `default-src` covers both the image and the
      * fetch that resolves a `.url` screenshot link, since the policy declares neither img-src nor connect-src.
-     *
-     * @throws InvalidArgumentException
      */
     public function contentSecurityPolicySources(ContentSecurityPolicySourcesEvent $event): void
     {
-        $event->addSources(CspDirective::DEFAULT_SRC, 'a0.muscache.com');
+        $event->addSources('default-src', 'a0.muscache.com');
     }
 
     public function projectUrls(ProjectUrlsEvent $event): void
