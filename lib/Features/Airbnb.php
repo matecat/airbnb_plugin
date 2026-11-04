@@ -20,6 +20,7 @@ use Model\FeaturesBase\Hook\Event\Filter\AppendFieldToAnalysisObjectEvent;
 use Model\FeaturesBase\Hook\Event\Filter\CharacterLengthCountEvent;
 use Model\FeaturesBase\Hook\Event\Filter\CheckTagMismatchEvent;
 use Model\FeaturesBase\Hook\Event\Filter\CheckTagPositionsEvent;
+use Model\FeaturesBase\Hook\Event\Filter\ContentSecurityPolicySourcesEvent;
 use Model\FeaturesBase\Hook\Event\Filter\FilterContributionStructOnMTSetEvent;
 use Model\FeaturesBase\Hook\Event\Filter\FilterMyMemoryGetParametersEvent;
 use Model\FeaturesBase\Hook\Event\Filter\FilterRevisionChangeNotificationListEvent;
@@ -140,6 +141,15 @@ class Airbnb extends BaseFeature
         $segmentsList->isSpice = true;
 
         $event->setSegmentsList($segmentsList);
+    }
+
+    /**
+     * Airbnb serves the context screenshots from its own CDN. `default-src` covers both the image and the
+     * fetch that resolves a `.url` screenshot link, since the policy declares neither img-src nor connect-src.
+     */
+    public function contentSecurityPolicySources(ContentSecurityPolicySourcesEvent $event): void
+    {
+        $event->addSources('default-src', 'a0.muscache.com');
     }
 
     public function projectUrls(ProjectUrlsEvent $event): void

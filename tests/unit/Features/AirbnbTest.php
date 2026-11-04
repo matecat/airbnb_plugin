@@ -17,6 +17,7 @@ use Model\FeaturesBase\Hook\Event\Filter\AppendFieldToAnalysisObjectEvent;
 use Model\FeaturesBase\Hook\Event\Filter\CharacterLengthCountEvent;
 use Model\FeaturesBase\Hook\Event\Filter\CheckTagMismatchEvent;
 use Model\FeaturesBase\Hook\Event\Filter\CheckTagPositionsEvent;
+use Model\FeaturesBase\Hook\Event\Filter\ContentSecurityPolicySourcesEvent;
 use Model\FeaturesBase\Hook\Event\Filter\FilterContributionStructOnMTSetEvent;
 use Model\FeaturesBase\Hook\Event\Filter\FilterMyMemoryGetParametersEvent;
 use Model\FeaturesBase\Hook\Event\Filter\FilterRevisionChangeNotificationListEvent;
@@ -543,5 +544,19 @@ class AirbnbTest extends AbstractTest
         self::assertSame('original translation', $result->translation);
         self::assertSame('layer0:layer1 ctx before', $result->context_before);
         self::assertSame('layer0:layer1 ctx after', $result->context_after);
+    }
+
+    // ---------------------------------------------------------------
+    // contentSecurityPolicySources
+    // ---------------------------------------------------------------
+
+    #[Test]
+    public function contentSecurityPolicySourcesAddsTheScreenshotCdnToDefaultSrcOnly(): void
+    {
+        $event = new ContentSecurityPolicySourcesEvent();
+
+        $this->airbnb->contentSecurityPolicySources($event);
+
+        self::assertSame(['default-src' => 'a0.muscache.com'], $event->getSources());
     }
 }
