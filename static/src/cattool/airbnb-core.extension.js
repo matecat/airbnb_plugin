@@ -414,7 +414,7 @@ const init = () => {
   const originalSegmentHasNote = SegmentUtils.segmentHasNote
   SegmentUtils.segmentHasNote = (segment) => {
     const hasOrginalNotes = originalSegmentHasNote(segment)
-    return hasOrginalNotes || segment.segment.indexOf('"base64:fHx8fA=="') > -1
+    return hasOrginalNotes || segment.segment?.indexOf('"base64:fHx8fA=="') > -1
   }
 
   catToolInterface.getCharacterCounterMode = () =>
